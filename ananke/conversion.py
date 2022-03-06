@@ -72,12 +72,12 @@ def calc_coords(data, indices=(None, None)):
     vz = data['vz_true'][i_start: i_stop] * u.km / u.s
     gc = coord.Galactic(
         u=px, v=py, w=pz, U=vx, V=vy, W=vz,
-        representation=coord.CartesianRepresentation,
+        representation_type=coord.CartesianRepresentation,
         differential_type=coord.CartesianDifferential)
 
     coord_data['pml_true'] = gc.sphericalcoslat.differentials['s'].d_lon_coslat.value
     coord_data['pmb_true'] = gc.sphericalcoslat.differentials['s'].d_lat.value
-    coord_data['radial_velocity'] = gc.sphericalcoslat.differentials['s'].d_distance.value
+    coord_data['radial_velocity_true'] = gc.sphericalcoslat.differentials['s'].d_distance.value
 
     # calculate proper motion in ICRS
     icrs = gc.transform_to(coord.ICRS)
