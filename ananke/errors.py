@@ -94,7 +94,7 @@ def calc_spectroscopic_errors(data, indices=(None, None)):
     rv = data['radial_velocity_true'][i_start:i_stop]
 
     err_data = {}
-    radial_velocity_error = np.zeros_like(rv)
+    rv_error = np.zeros_like(rv)
 
     err_data['radial_velocity'] = np.random.normal(rv, rv_error)
     err_data['radial_velocity_error'] = rv_error
