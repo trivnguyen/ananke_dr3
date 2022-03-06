@@ -1,5 +1,6 @@
 
-from astropy.coordinates import Distance
+import astropy.coordinates as coord
+import astropy.units as u
 
 ALL_MOCK_KEYS = {
     'parentid': 'parentid',
@@ -59,18 +60,29 @@ def calc_coords(data, indices=(None, None)):
 
     # calculate parallax
     dmod = data['dmod_true'][i_start: i_stop]
-    parallax = Distance(distmod=dmod, unit='kpc').parallax.value
+    parallax = coord.Distance(distmod=dmod, unit=u.kpc).parallax.value
     coord_data['parallax_true'] = parallax
 
-    # calculate proper motion and radial velocity
-    #coord_data['pmra_true'] = None
-    #coord_data['pmdec_true'] = None
-    #coord_data['radial_velocity_true'] = None
+    # calculate galactic proper motion and radial velocity
+    px = data['px_true'][i_start: i_stop] * u.kpc
+    py = data['py_true'][i_start: i_stop] * u.kpc
+    pz = data['pz_true'][i_start: i_stop] * u.kpc
+    vx = data['vz_true'][i_start: i_stop] * u.km / u.s
+    vy = data['vy_true'][i_start: i_stop] * u.km / u.s
+    vz = data['vz_true'][i_start: i_stop] * u.km / u.s
+    gc = coord.Galactic(
+        u=px, v=py, w=pz, U=vx, V=vy, W=vz,
+        representation=coord.CartesianRepresentation,
+        differential_type=coord.CartesianDifferential)
+
+    coord_data['pml_true'] = gc.sphericalcoslat.differentials['s'].d_lon_coslat.value
+    coord_data['pmb_true'] = gc.sphericalcoslat.differentials['s'].d_lat.value
+    coord_data['radial_velocity'] = gc.sphericalcoslat.differentials['s'].d_distance.value
+
+    # calculate proper motion in ICRS
+    icrs = gc.transform_to(coord.ICRS)
+    coord_data['pmra_true'] = icrs.pm_ra_cosdec.to_value(u.mas/u.yr)
+    coord_data['pmdec_true'] = icrs.pm_dec.to_value(u.mas/u.yr)
 
     return coord_data
-
-
-
-
-
 

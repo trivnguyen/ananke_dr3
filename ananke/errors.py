@@ -56,8 +56,8 @@ def calc_astrometric_errors(data, indices=(None, None), release=_DEFAULT_RELEASE
     ra_true = data['ra_true'][i_start: i_stop]
     dec_true = data['dec_true'][i_start: i_stop]
     parallax_true = data['parallax_true'][i_start: i_stop]
-    #pmra_true = data['pmra_true'][i_start: i_stop]
-    #pmdec_true = data['pmdec_true'][i_start: i_stop]
+    pmra_true = data['pmra_true'][i_start: i_stop]
+    pmdec_true = data['pmdec_true'][i_start: i_stop]
 
     err_data = {}
 
@@ -73,6 +73,7 @@ def calc_astrometric_errors(data, indices=(None, None), release=_DEFAULT_RELEASE
     err_data['ra_error'] = ra_error
     err_data['dec_error'] = dec_error
     err_data['parallax_error'] = parallax_error
+    err_data['parallax_over_error'] = err_data['parallax'] / parallax_error
 
     # calculate proper motion error and convert to Ananke unit
     # note that pmra includes a factor cos(dec), i.e. pmra = pmra * cos(dec)
@@ -80,8 +81,8 @@ def calc_astrometric_errors(data, indices=(None, None), release=_DEFAULT_RELEASE
     pmra_error = pmra_error * uas_to_mas
     pmdec_error = pmdec_error * uas_to_mas
 
-    #err_data['pmra'] = np.random.normal(pmra_true, pmra_error)
-    #err_data['pmdec'] = np.random.normal(pmdec_true, pmdec_error)
+    err_data['pmra'] = np.random.normal(pmra_true, pmra_error)
+    err_data['pmdec'] = np.random.normal(pmdec_true, pmdec_error)
     err_data['pmra_error'] = pmra_error
     err_data['pmdec_error'] = pmdec_error
 
@@ -89,5 +90,14 @@ def calc_astrometric_errors(data, indices=(None, None), release=_DEFAULT_RELEASE
 
 def calc_spectroscopic_errors(data, indices=(None, None)):
     ''' Caculate spectroscopic error and error-convoled data '''
+    i_start, i_stop = indices
+    rv = data['radial_velocity_true'][i_start:i_stop]
+
     err_data = {}
+    radial_velocity_error = np.zeros_like(rv)
+
+    err_data['radial_velocity'] = np.random.normal(rv, rv_error)
+    err_data['radial_velocity_error'] = rv_error
+
     return err_data
+
