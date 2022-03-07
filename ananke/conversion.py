@@ -1,7 +1,4 @@
 
-import astropy.coordinates as coord
-import astropy.units as u
-
 ALL_MOCK_KEYS = {
     'parentid': 'parentid',
     'partid': 'partid',

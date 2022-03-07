@@ -7,7 +7,7 @@ import argparse
 import astropy
 import astropy.units as u
 
-from ananke import conversion, errors, extinction, io
+from ananke import coordinates, conversion, errors, extinction, io
 
 FLAGS = None
 def parse_cmd():
@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
             # coordinate conversion
             #print('calculate coordinates')
-            data = conversion.calc_coords(f, indices=(i_start, i_stop))
+            data = coordinates.calc_coords(f, indices=(i_start, i_stop))
             io.append_dataset_dict(f, data, overwrite=False)
 
             # calculate extinction

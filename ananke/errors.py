@@ -1,10 +1,12 @@
 
 import numpy as np
-from scipy.interpolate import interp1d
 import astropy.units as u
+from scipy.interpolate import interp1d
 
 import pygaia
 from pygaia.errors import astrometric, photometric, spectroscopic
+
+from . import coordinates
 
 _DEFAULT_RELEASE = 'dr3'
 
@@ -75,7 +77,7 @@ def calc_astrometric_errors(data, indices=(None, None), release=_DEFAULT_RELEASE
     err_data['parallax_error'] = parallax_error
     err_data['parallax_over_error'] = err_data['parallax'] / parallax_error
 
-    # calculate proper motion error and convert to Ananke unit
+    # calculate proper motion error in ICRS coord and convert to Ananke unit
     # note that pmra includes a factor cos(dec), i.e. pmra = pmra * cos(dec)
     pmra_error, pmdec_error = astrometric.position_uncertainty(g_mag, release=release)
     pmra_error = pmra_error * uas_to_mas
@@ -85,6 +87,10 @@ def calc_astrometric_errors(data, indices=(None, None), release=_DEFAULT_RELEASE
     err_data['pmdec'] = np.random.normal(pmdec_true, pmdec_error)
     err_data['pmra_error'] = pmra_error
     err_data['pmdec_error'] = pmdec_error
+
+    # calculate the error-convolved angle and proper motion in Galactic coord
+    # NOTE: this does NOT return the error
+    err_data.update(coordinates.icrs_to_gal(err_data, postfix='', indices=indices))
 
     return err_data
 
