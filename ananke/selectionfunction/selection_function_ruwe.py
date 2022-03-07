@@ -177,7 +177,7 @@ if sys.argv[3] == 'save':
         pickle.dump(state, frand)
 elif sys.argv[3] == 'load':
     print('Loading random state')
-    with open('test_random_state.pkl', 'rb') as frand:
+    with open(sys.argv[4], 'rb') as frand:
         state = pickle.load(frand)
     prng = np.random.RandomState()
     prng.set_state(state)
