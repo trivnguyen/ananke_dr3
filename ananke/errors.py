@@ -90,20 +90,31 @@ def calc_astrometric_errors(data, indices=(None, None), release=_DEFAULT_RELEASE
 
     # calculate the error-convolved angle and proper motion in Galactic coord
     # NOTE: this does NOT return the error
-    err_data.update(coordinates.icrs_to_gal(err_data, postfix='', indices=indices))
+    err_data.update(coordinates.icrs_to_gal(err_data, postfix=''))
 
     return err_data
 
 def calc_spectroscopic_errors(data, indices=(None, None)):
-    ''' Caculate spectroscopic error and error-convoled data '''
+    ''' Caculate spectroscopic error and error-convoled data
+    TODO: Currently returning all 0. Implement this!
+    '''
     i_start, i_stop = indices
     rv = data['radial_velocity_true'][i_start:i_stop]
-
-    err_data = {}
     rv_error = np.zeros_like(rv)
 
+    err_data = {}
     err_data['radial_velocity'] = np.random.normal(rv, rv_error)
     err_data['radial_velocity_error'] = rv_error
-
     return err_data
+
+def calc_errors(data, indices=(None, None), release=_DEFAULT_RELEASE):
+    ''' Calculate all errors '''
+    err_data = {}
+    err_data.update(calc_photometric_errors(data, indices))
+    err_data.update(calc_astrometric_errors(data, indices, release=release))
+    err_data.update(calc_spectroscopic_errors(data, indices))
+    return err_data
+
+
+
 
