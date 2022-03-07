@@ -12,9 +12,9 @@ from ananke import coordinates, conversion, errors, extinction, io
 FLAGS = None
 def parse_cmd():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--mock-file', required=False, help='Path to mock file')
-    parser.add_argument('--ext-file', required=False, help='Path to extinction file')
-    parser.add_argument('--out-file', required=False, help='Path to output file')
+    parser.add_argument('--mock-file', required=True, help='Path to mock file')
+    parser.add_argument('--ext-file', required=True, help='Path to extinction file')
+    parser.add_argument('--out-file', required=True, help='Path to output file')
     parser.add_argument('--batch-size', required=False, type=int, default=1000000,
                         help='Batch size')
     return parser.parse_args()
@@ -24,9 +24,9 @@ if __name__ == '__main__':
 
     # Parse cmd
     FLAGS = parse_cmd()
-    FLAGS.mock_file = "/scratch/07561/tg868605/gaia_mocks/m12i/test/lsr-2-rslice-0.m12i-res7100-md-sliced.ebf"
-    FLAGS.ext_file = "/scratch/07561/tg868605/gaia_mocks/m12i/test/lsr-2-rslice-0.m12i-res7100-md-sliced.ext.ebf"
-    FLAGS.out_file = 'test.hdf5'
+    #FLAGS.mock_file = "/scratch/07561/tg868605/gaia_mocks/m12i/test/lsr-2-rslice-0.m12i-res7100-md-sliced.ebf"
+    #FLAGS.ext_file = "/scratch/07561/tg868605/gaia_mocks/m12i/test/lsr-2-rslice-0.m12i-res7100-md-sliced.ext.ebf"
+    #FLAGS.out_file = 'test.hdf5'
 
     # Overwrite file
     if os.path.exists(FLAGS.out_file):
