@@ -1,19 +1,34 @@
-# Expect input: python selection_function.py input.hdf5 output.hdf5 load/save random_state.pkl
+#!/usr/bin/env python
+
 # Import libraries
+import os
 import sys
+import h5py
+
 import numpy as np
 import pickle
-import h5py
-import os
 
-# Set up the selection function maps
 from selectionfunctions.config import config
-config['data_dir'] = './selectionfunctions/data/' # Change this line to where you want to store the selection function maps
-
 import selectionfunctions.cog_ii as CoGII
 import selectionfunctions.cog_v as CoGV
 from selectionfunctions.source import Source
 from selectionfunctions.map import coord2healpix
+
+from ananke import io
+
+FLAGS = None
+def parse_cmd():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--in-file', required=True, help='Path to input file')
+    parser.add_argument('--out-file', required=True, help='Path to output file')
+    parser.add_argument('--random-state', required=True, nargs=2, metavar=('save/load', 'path'), 
+                        help='Save or load random state with path to file')
+    parser.add_argument('--batch-size', required=False, type=int, default=1000000,
+                        help='Batch size')
+    return parser.parse_args()
+
+
+config['data_dir'] = './selectionfunctions/data/' # Change this line to where you want to store the selection function maps
 
 # Fetch data
 print("Fetching data...")
@@ -22,7 +37,7 @@ CoGV.fetch(version='cog_v', subset='astrometry')
 CoGV.fetch(version='cog_v', subset='ruwe1p4')
 CoGV.fetch(version='cog_v', subset='rvs')
 
-
+# Load the maps
 print("Loading general selection function...")
 dr3_sf = CoGII.dr3_sf(version='modelAB',crowding=True)
 
@@ -41,25 +56,6 @@ rvs_sf = CoGV.subset_sf(map_fname='rvs_cogv.h5', nside=32,
                 basis_options={'needlet':'chisquare', 'p':1.0, 'wavelet_tol':1e-2},
                 spherical_basis_directory='SphericalBasis')
 
-def append_dataset(fobj, key, data, overwrite=False):
-    ''' Append an hdf5 dataset '''
-    dataset = fobj.get(key)
-    if dataset is None:
-        fobj.create_dataset(key, data=data, maxshape=(None,), chunks=True)
-    else:
-        if overwrite:
-            del dataset
-            fobj.create_dataset(key, data=data, maxshape=(None,), chunks=True)
-        else:
-            N = dataset.shape[0]
-            N_data = len(data)
-            dataset.resize(N + N_data, axis=0)
-            dataset[-N_data:] = data
-
-def append_dataset_dict(fobj, data_dict, overwrite=False):
-    ''' Append multiple hdf5 dataset '''
-    for key, data in data_dict.items():
-        append_dataset(fobj, key, data, overwrite)
 
 def selection_function(data,output,indices=(None, None)):
     i_start, i_stop = indices
@@ -146,52 +142,51 @@ def selection_function(data,output,indices=(None, None)):
     for key in selec_data.keys():
         data_slice[key] = selec_data[key][selec_data['selected_ruwe']]
     
-    append_dataset_dict(output, data_slice, overwrite=False)
+    io.append_dataset_dict(output, data_slice, overwrite=False)
 
-
-        
-# Process the data
-f_input = sys.argv[1]
-
-f_selected = sys.argv[2]
-
-batch_size = 100000
-
-# Overwrite file
-if os.path.exists(f_selected):
-    os.remove(f_selected)
-
-f = h5py.File(f_input, 'r')
-fo = h5py.File(f_selected, 'a')
-N = len(f['dmod_true'])
-print(f'Total number of sources:{N}')
-N_batch = (N + batch_size - 1) // batch_size
-
-
-# Save or load the random state
-if sys.argv[3] == 'save':
-    print("Saving random state")
-    prng = np.random.RandomState()
-    state = prng.get_state()
-    with open(sys.argv[4], 'wb') as frand: 
-        pickle.dump(state, frand)
-elif sys.argv[3] == 'load':
-    print('Loading random state')
-    with open(sys.argv[4], 'rb') as frand:
-        state = pickle.load(frand)
-    prng = np.random.RandomState()
-    prng.set_state(state)
-else:
-    print('Unexpected save/load instruction for random state')
-    sys.exit()
+if __name__ == '__main__':
+    ''' Make a synthetic survey from an extincted mock and selection functions '''
     
-for i_batch in range(N_batch):
-    print(f'[{i_batch}/{N_batch}]')
+    # Parse cmd
+    FLAGS = parse_cmd()
 
-    i_start = i_batch * batch_size
-    i_stop = i_start + batch_size
-
-    selection_function(f,fo,indices=(i_start, i_stop))
+    # Overwrite file
+    if os.path.exists(FLAGS.out_file):
+        os.remove(FLAGS.out_file)
     
-f.close()
-fo.close()
+    # Open the files for read/write
+    f = h5py.File(FLAGS.in_file, 'r')
+    fo = h5py.File(FLAGS.out_file, 'a')
+    N = len(f['dmod_true'])
+    print(f'Total number of sources:{N}')
+    N_batch = (N + FLAGS.batch_size - 1) // FLAGS.batch_size
+
+
+    # Save or load the random state
+    if FLAGS.random_state[0] == 'save':
+        print("Saving random state")
+        prng = np.random.RandomState()
+        state = prng.get_state()
+        with open(FLAGS.random_state[1], 'wb') as frand: 
+            pickle.dump(state, frand)
+    elif FLAGS.random_state[0] == 'load':
+        print('Loading random state')
+        with open(FLAGS.random_state[1], 'rb') as frand:
+            state = pickle.load(frand)
+        prng = np.random.RandomState()
+        prng.set_state(state)
+    else:
+        print('Unexpected save/load instruction for random state')
+        sys.exit()
+    
+    # Apply selection function
+    for i_batch in range(N_batch):
+        print(f'[{i_batch}/{N_batch}]')
+
+        i_start = i_batch * FLAGS.batch_size
+        i_stop = i_start + FLAGS.batch_size
+
+        selection_function(f,fo,indices=(i_start, i_stop))
+
+    f.close()
+    fo.close()
