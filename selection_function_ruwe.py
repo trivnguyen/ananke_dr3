@@ -28,7 +28,7 @@ def parse_cmd():
     return parser.parse_args()
 
 
-config['data_dir'] = './selectionfunctions/data/' # Change this line to where you want to store the selection function maps
+config['data_dir'] = './ananke/selectionfunction/data/' # Change this line to where you want to store the selection function maps
 
 # Fetch data
 print("Fetching data...")
@@ -57,7 +57,7 @@ rvs_sf = CoGV.subset_sf(map_fname='rvs_cogv.h5', nside=32,
                 spherical_basis_directory='SphericalBasis')
 
 
-def selection_function(data,output,indices=(None, None)):
+def selection_function(data,output,indices,prng):
     i_start, i_stop = indices
     
     # read ra, dec, g mag, and rp mag modulus
@@ -186,7 +186,7 @@ if __name__ == '__main__':
         i_start = i_batch * FLAGS.batch_size
         i_stop = i_start + FLAGS.batch_size
 
-        selection_function(f,fo,indices=(i_start, i_stop))
+        selection_function(f,fo,indices=(i_start, i_stop),prng=prng)
 
     f.close()
     fo.close()
