@@ -1,6 +1,9 @@
 
 import os
-import ebf
+try:
+    import ebf
+except ImportError:
+    print('Cannot import ebf')
 import h5py
 
 def append_dataset(fobj, key, data, overwrite=False):
