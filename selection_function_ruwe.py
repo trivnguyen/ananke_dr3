@@ -170,8 +170,8 @@ if __name__ == '__main__':
         for j_subset in range(len(FLAGS.selection)):
             # Reset the random state to what it is at the beginning of this batch to guarantee consistent selection across subsets
             prng.set_state(state_tmp)
-            selec_data = selection_function(ra, dec, gmag, rpmag, fo, prng, 
-                                            sf_subset_maps[j_subset], sf_type = FLAGS.selection[j_subset], sf_general_map, selec_data)
+            selec_data = selection_function(ra=ra, dec=dec, gmag=gmag, rpmag=rpmag, output=fo, prng=prng, 
+                                            sf_subset_map=sf_subset_maps[j_subset], sf_type=FLAGS.selection[j_subset], sf_general_map=sf_general_map, selec_data=selec_data)
         # Reduce the size to only those selected for good ...
         # Count how many are left for this batch [xx: TBD]
         N_batch_selected = len(ra[selec_data['selected_ruwe1p4']])
