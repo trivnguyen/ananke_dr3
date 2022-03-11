@@ -183,12 +183,12 @@ if __name__ == '__main__':
         index_selec = np.arange(i_start, i_start+len(selec_data['selected_ruwe1p4']))
         data_slice['index_in_mock'] = index_selec[selec_data['selected_ruwe1p4']]
 
-        for key in data.keys():
-            data_slice[key] = data[key][i_start: i_stop][selec_data['selected_ruwe1p4']]
+        for key in f.keys():
+            data_slice[key] = f[key][i_start: i_stop][selec_data['selected_ruwe1p4']]
 
         for key in selec_data.keys():
             data_slice[key] = selec_data[key][selec_data['selected_ruwe1p4']]
-        io.append_dataset_dict(output, data_slice, overwrite=False)
+        io.append_dataset_dict(fo, data_slice, overwrite=False)
         
     
     f.close()
