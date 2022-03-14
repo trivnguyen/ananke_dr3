@@ -26,6 +26,7 @@ def parse_cmd():
                         help='Save or load random state with path to file')
     parser.add_argument('--selection', required=True, nargs='*', 
                         help='Selection maps to apply; Availabel options are [general, astrometry, ruwe1p4, rvs]')
+    parser.add_argument('--sf-data-dir', required=True, help='Path to selection function data directory')
     parser.add_argument('--batch-size', required=False, type=int, default=1000000,
                         help='Batch size')
     
@@ -99,7 +100,7 @@ if __name__ == '__main__':
     FLAGS = parse_cmd()
     
     # Define the path to selection function maps
-    config['data_dir'] = '/work2/08052/tg873515/stampede2/ananke_fire_gaia_dr3/selectionfunction_data/' # Change this line to where you want to store the selection function maps
+    config['data_dir'] = FLAGS.sf_data_dir
 
     # Fetch data
     print("Fetching data...")
