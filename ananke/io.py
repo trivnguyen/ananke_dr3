@@ -1,11 +1,14 @@
 
 import os
+import h5py
+import logging
+logger = logging.getLogger(__name__)
+
+import numpy as np
 try:
     import ebf
 except ImportError:
-    print('Cannot import ebf')
-import h5py
-import numpy as np
+    logger.warn('Cannot import ebf')
 
 def append_dataset(fobj, key, data, overwrite=False):
     ''' Append an hdf5 dataset '''
@@ -52,10 +55,6 @@ def ebf_to_hdf5_split(infile, outfile, keys, i_split=0, n_split=1, batch_size=10
     if i_split >= n_split:
         raise ValueError(f'i_split {i_split} must be smaller than n_split {n_split}')
 
-    print('converting')
-    print(f'input file: {infile}')
-    print(f'output file: {outfile}')
-
     # Get the total length
     if isinstance(keys, dict):
         test_key = list(keys.keys())[0]
@@ -80,5 +79,4 @@ def ebf_to_hdf5_split(infile, outfile, keys, i_split=0, n_split=1, batch_size=10
                     append_dataset(f, new_key, data)
                 except:
                     print(new_key, data, batch)
-    print('Done')
 
