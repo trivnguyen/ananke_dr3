@@ -23,7 +23,7 @@ def parse_cmd():
                         help='Batch size')
     return parser.parse_args()
 
-def set_logger()
+def set_logger():
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
@@ -40,14 +40,14 @@ if __name__ == '__main__':
     logger = set_logger()
 
     logger.info('Create mock catalog with settings:')
-    logger.info(f'Job: [{FLAGS.ijob} / {FLAGS.Njob}')
-    logger.info(f'Batch size: {FLAGS.batch_size}'}
+    logger.info(f'Job: [{FLAGS.ijob} / {FLAGS.Njob}]')
+    logger.info(f'Batch size: {FLAGS.batch_size}')
     logger.info(f'Mock file      : {FLAGS.mock_file}')
     logger.info(f'Extinction file: {FLAGS.ext_file}')
-    logger.info(f'Output file    : {FLAGS.output_file}')
+    logger.info(f'Output file    : {FLAGS.out_file}')
 
     if os.path.exists(FLAGS.out_file):
-        logger.warn(f'Overwriting {FLAGS.out_file}')
+        logger.warning(f'Overwriting {FLAGS.out_file}')
         os.remove(FLAGS.out_file)
 
     # Converting EBF to HDF5
