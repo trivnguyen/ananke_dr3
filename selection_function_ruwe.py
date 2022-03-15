@@ -26,6 +26,7 @@ def parse_cmd():
                         help='Save or load random state with path to file')
     parser.add_argument('--selection', required=True, nargs='*', 
                         help='Selection maps to apply; Availabel options are [general, astrometry, ruwe1p4, rvs]')
+    parser.add_argument('--sf-data-dir', required=True, help='Path to selection function data directory')
     parser.add_argument('--batch-size', required=False, type=int, default=1000000,
                         help='Batch size')
     
@@ -99,7 +100,7 @@ if __name__ == '__main__':
     FLAGS = parse_cmd()
     
     # Define the path to selection function maps
-    config['data_dir'] = '../selectionfunction_data/' # Change this line to where you want to store the selection function maps
+    config['data_dir'] = FLAGS.sf_data_dir
 
     # Fetch data
     print("Fetching data...")
@@ -170,8 +171,8 @@ if __name__ == '__main__':
         for j_subset in range(len(FLAGS.selection)):
             # Reset the random state to what it is at the beginning of this batch to guarantee consistent selection across subsets
             prng.set_state(state_tmp)
-            selec_data = selection_function(ra, dec, gmag, rpmag, fo, prng, 
-                                            sf_subset_maps[j_subset], sf_type = FLAGS.selection[j_subset], sf_general_map, selec_data)
+            selec_data = selection_function(ra=ra, dec=dec, gmag=gmag, rpmag=rpmag, output=fo, prng=prng, 
+                                            sf_subset_map=sf_subset_maps[j_subset], sf_type=FLAGS.selection[j_subset], sf_general_map=sf_general_map, selec_data=selec_data)
         # Reduce the size to only those selected for good ...
         # Count how many are left for this batch [xx: TBD]
         N_batch_selected = len(ra[selec_data['selected_ruwe1p4']])
@@ -180,15 +181,15 @@ if __name__ == '__main__':
         data_slice = {}
 
         # Create an index list for identifying what stars are selected
-        index_selec = np.arange(i_start, i_start+len(selec_data[xx]))
-        data_slice['index_in_mock'] = index_selec[selec_data[xx]]
+        index_selec = np.arange(i_start, i_start+len(selec_data['selected_ruwe1p4']))
+        data_slice['index_in_mock'] = index_selec[selec_data['selected_ruwe1p4']]
 
-        for key in data.keys():
-            data_slice[key] = data[key][i_start: i_stop][selec_data[xx]]
+        for key in f.keys():
+            data_slice[key] = f[key][i_start: i_stop][selec_data['selected_ruwe1p4']]
 
         for key in selec_data.keys():
-            data_slice[key] = selec_data[key][selec_data[xx]]
-        io.append_dataset_dict(output, data_slice, overwrite=False)
+            data_slice[key] = selec_data[key][selec_data['selected_ruwe1p4']]
+        io.append_dataset_dict(fo, data_slice, overwrite=False)
         
     
     f.close()
