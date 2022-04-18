@@ -26,7 +26,7 @@ def vmini_to_bminr(vmini):
 
 def gminr_to_grvsminr(gminr):
     ''' Convert Gaia G-G_RP to Gaia G_RVS-G_RP '''
-    gminr_max = 1.2
+    gminr_max = 1.7
     gminr_min = -0.15
     gminr_mid = 1.2
     res = np.empty_like(gminr)*np.nan
