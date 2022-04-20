@@ -49,7 +49,7 @@ def calc_extinction(data, bands=_DEFAULT_BANDS, indices=(None, None)):
     for band in bands:
         phot_mean_mag_abs = data[f'phot_{band}_mean_mag_abs'][i_start: i_stop]
         a_0 = data['a0'][i_start: i_stop]
-        teff = data['teff_true'][i_start:i_stop]
+        teff = data['teff'][i_start:i_stop]
         phot_mean_mag_int = abs_to_app(phot_mean_mag_abs, dmod)
         phot_mean_mag_true = app_to_ext(phot_mean_mag_int, band, a_0, teff)
 

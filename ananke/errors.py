@@ -114,7 +114,7 @@ def calc_spectroscopic_errors(data, indices=(None, None)):
     g_mag_true = data['phot_g_mean_mag_true'][i_start: i_stop]
     rp_mag_true = data['phot_rp_mean_mag_true'][i_start: i_stop]
     rv = data['radial_velocity_true'][i_start:i_stop]
-    teff = data['teff_true'][i_start:i_stop]
+    teff = data['teff'][i_start:i_stop]
     
     # No PyGaia function for this yet; implementing calculation from Robyn's communication
     # rv_error = np.zeros_like(rv)

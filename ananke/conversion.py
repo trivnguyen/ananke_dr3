@@ -19,6 +19,7 @@ ALL_MOCK_KEYS = {
     'mact': 'mact',
     'mtip': 'mtip',
     'age': 'age',
+    'teff': 'teff',
     'grav': 'logg',
     'feh': 'feh',
     'alpha': 'alpha',
