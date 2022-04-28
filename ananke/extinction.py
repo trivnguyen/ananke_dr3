@@ -75,7 +75,7 @@ def calc_extinction(data, bands=_DEFAULT_BANDS, indices=(None, None), ext_var='b
         phot_mean_mag_int = abs_to_app(phot_mean_mag_abs, dmod)
         
         # Calculate extincted apparent magnitude
-        a_0 = data['a0'][i_start: i_stop]
+        a_0 = data['A0'][i_start: i_stop]
         if ext_var == 'teff':
             teff = data['teff'][i_start:i_stop]
             phot_mean_mag_true = app_to_ext(phot_mean_mag_int, band, a_0, teff, ext_var)
