@@ -67,7 +67,7 @@ def calc_astrometric_errors(data, indices=(None, None), release=_DEFAULT_RELEASE
     ''' Compute astrometric errors and compute the error-convolved data '''
     i_start, i_stop = indices
     uas_to_mas = u.uas.to(u.mas)   # conversion from micro-arcsec to milli-arcsec
-    uas_to_deg = u.uas.to(u.deg)   # covnersion from micro-arcsec to degree
+    uas_to_deg = u.uas.to(u.deg)   # conversion from micro-arcsec to degree
     g_mag = data['phot_g_mean_mag_true'][i_start: i_stop]
     ra_true = data['ra_true'][i_start: i_stop]
     dec_true = data['dec_true'][i_start: i_stop]
@@ -77,11 +77,15 @@ def calc_astrometric_errors(data, indices=(None, None), release=_DEFAULT_RELEASE
 
     err_data = {}
 
-    # calculate position error and convert to Ananke unit
-    ra_cosdec_error, dec_error = astrometric.position_uncertainty(g_mag, release=release)
+    # calculate parallax error
     parallax_error = astrometric.parallax_uncertainty(g_mag, release=release) * uas_to_mas
-    ra_error = np.abs(ra_cosdec_error / np.cos(dec_true)) * uas_to_deg
+
+    # calculate RA and Dec error
+    ra_cosdec_error, dec_error = astrometric.position_uncertainty(g_mag, release=release)
+    ra_cosdec_error = ra_cosdec_error * uas_to_deg
     dec_error = dec_error * uas_to_deg
+    ra_error = np.sqrt(
+        (ra_cosdec_error**2 - dec_error**2 * np.sin(dec_true)**2) / np.sin(dec_true)**2)
 
     err_data['ra'] = np.random.normal(ra_true, ra_error)
     err_data['dec'] = np.random.normal(dec_true, dec_error)
@@ -115,7 +119,7 @@ def calc_spectroscopic_errors(data, indices=(None, None)):
     rp_mag_true = data['phot_rp_mean_mag_true'][i_start: i_stop]
     rv = data['radial_velocity_true'][i_start:i_stop]
     teff = data['teff'][i_start:i_stop]
-    
+
     # No PyGaia function for this yet; implementing calculation from Robyn's communication
     # rv_error = np.zeros_like(rv)
     # Calculate GRVS-G from G-GRP, error for RV, and the correction factor
