@@ -48,10 +48,10 @@ def app_to_ext(mag, band, a_0, X, ext_var):
     elif ext_var == 'bminr':
         X_min = -0.06
         X_max = 2.5
-        
+
         # Set the extinction law coeff.
         coeff = _DEFAULT_LAWS_BMINR[band]
-    
+
     k_mag = coeff[0] + coeff[1] * X + coeff[2] * X**2 + coeff[3] * X**3 + \
             coeff[4] * a_0 + coeff[5] * a_0**2 + coeff[6] * a_0**3 + \
             coeff[7] * X * a_0 + coeff[8] * a_0 * X**2 + coeff[9] * X * a_0**2
@@ -73,7 +73,7 @@ def calc_extinction(data, bands=_DEFAULT_BANDS, indices=(None, None), ext_var='b
         # Calculate unextincted apparent magnitude
         phot_mean_mag_abs = data[f'phot_{band}_mean_mag_abs'][i_start: i_stop]
         phot_mean_mag_int = abs_to_app(phot_mean_mag_abs, dmod)
-        
+
         # Calculate extincted apparent magnitude
         a_0 = data['A0'][i_start: i_stop]
         if ext_var == 'teff':
@@ -83,7 +83,7 @@ def calc_extinction(data, bands=_DEFAULT_BANDS, indices=(None, None), ext_var='b
             bp_mag_true = data['phot_bp_mean_mag_true'][i_start: i_stop]
             rp_mag_true = data['phot_rp_mean_mag_true'][i_start: i_stop]
             phot_mean_mag_true = app_to_ext(phot_mean_mag_int, band, a_0, bp_mag_true-rp_mag_true, ext_var)
-        
+
         # Store the results
         ext_data[f'phot_{band}_mean_mag_int'] = phot_mean_mag_int
         ext_data[f'phot_{band}_mean_mag_true'] = phot_mean_mag_true
