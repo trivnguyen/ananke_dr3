@@ -24,6 +24,20 @@ def vmini_to_bminr(vmini):
     return np.where((vmini < vmini_min) | (vmini > vmini_max), np.nan,
                     -0.03298 + 1.259 * vmini - 0.1279 * vmini**2 + 0.01631 * vmini**3)
 
+def gminr_to_grvsminr(gminr):
+    ''' Convert Gaia G-G_RP to Gaia G_RVS-G_RP '''
+    gminr_max = 1.7
+    gminr_min = -0.15
+    gminr_mid = 1.2
+    res = np.empty_like(gminr)*np.nan
+    # Case 1
+    mask = ((gminr > gminr_min) & (gminr < gminr_mid))
+    res[mask] = -0.0397 - 0.2852 * gminr[mask] - 0.0330 * gminr[mask]**2 - 0.0867 * gminr[mask]**3
+    # Case 2
+    mask = ((gminr > gminr_mid) & (gminr < gminr_max))
+    res[mask] = -4.0618 + 10.0187 * gminr[mask] - 9.0532 * gminr[mask]**2 + 2.6089 * gminr[mask]**3
+    return res
+
 def calc_photometric_errors(data, indices=(None, None)):
     ''' Compute photometric errors and compute the error-convolved magnitudes '''
     i_start, i_stop = indices
@@ -95,16 +109,28 @@ def calc_astrometric_errors(data, indices=(None, None), release=_DEFAULT_RELEASE
     return err_data
 
 def calc_spectroscopic_errors(data, indices=(None, None)):
-    ''' Caculate spectroscopic error and error-convoled data
-    TODO: Currently returning all 0. Implement this!
-    '''
+    ''' Caculate spectroscopic error and error-convoled data '''
     i_start, i_stop = indices
+    g_mag_true = data['phot_g_mean_mag_true'][i_start: i_stop]
+    rp_mag_true = data['phot_rp_mean_mag_true'][i_start: i_stop]
     rv = data['radial_velocity_true'][i_start:i_stop]
-    rv_error = np.zeros_like(rv)
+    teff = data['teff'][i_start:i_stop]
+    
+    # No PyGaia function for this yet; implementing calculation from Robyn's communication
+    # rv_error = np.zeros_like(rv)
+    # Calculate GRVS-G from G-GRP, error for RV, and the correction factor
+    grvs_true = gminr_to_grvsminr(g_mag_true - rp_mag_true) + rp_mag_true
+    rv_error = np.where(teff < 6500, 0.12 + 6.0 * np.exp(0.9*(grvs_true - 14.0)),
+                        0.4 + 20.0 * np.exp(0.8*(grvs_true - 12.75)))
+    grvs_min = 8.0
+    grvs_true[grvs_true < grvs_min] = grvs_min
+    rv_error_corr = np.where(grvs_true > 12.0, 16.554 - 2.4899 * grvs_true + 0.09933 * grvs_true**2,
+                             0.318 + 0.3884 * grvs_true - 0.02778 * grvs_true**2)
 
     err_data = {}
     err_data['radial_velocity'] = np.random.normal(rv, rv_error)
     err_data['radial_velocity_error'] = rv_error
+    err_data['radial_velocity_error_corr_factor'] = rv_error_corr
     return err_data
 
 def calc_errors(data, indices=(None, None), release=_DEFAULT_RELEASE):
