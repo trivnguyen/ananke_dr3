@@ -14,11 +14,7 @@ from ananke import coordinates, conversion, errors, extinction, io
 FLAGS = None
 def parse_cmd():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--mock-file', required=True, help='Path to mock file')
-    parser.add_argument('--ext-file', required=True, help='Path to extinction file')
-    parser.add_argument('--out-file', required=True, help='Path to output file')
-    parser.add_argument('--ijob', type=int, default=0, help='Job index')
-    parser.add_argument('--Njob', type=int, default=1, help='Total number of jobs')
+    parser.add_argument('--in-file', required=True, help='Path to output file')
     parser.add_argument('--batch-size', required=False, type=int, default=1000000,
                         help='Batch size')
     return parser.parse_args()
@@ -39,29 +35,9 @@ if __name__ == '__main__':
 
     logger = set_logger()
 
-    logger.info('Create mock catalog with settings:')
-    logger.info(f'Job: [{FLAGS.ijob} / {FLAGS.Njob}]')
-    logger.info(f'Batch size: {FLAGS.batch_size}')
-    logger.info(f'Mock file      : {FLAGS.mock_file}')
-    logger.info(f'Extinction file: {FLAGS.ext_file}')
-    logger.info(f'Output file    : {FLAGS.out_file}')
-
-    if os.path.exists(FLAGS.out_file):
-        logger.warning(f'Overwriting {FLAGS.out_file}')
-        os.remove(FLAGS.out_file)
-
-    # Converting EBF to HDF5
-    logger.info('Convert EBF to HDF5')
-    io.ebf_to_hdf5_split(
-        FLAGS.mock_file, FLAGS.out_file, conversion.ALL_MOCK_KEYS,
-        FLAGS.ijob, FLAGS.Njob, FLAGS.batch_size)
-    io.ebf_to_hdf5_split(
-        FLAGS.ext_file, FLAGS.out_file, conversion.ALL_EXT_KEYS,
-        FLAGS.ijob, FLAGS.Njob, FLAGS.batch_size)
-
     # Read in and calculate extinction magnitude
     logger.info('Calculate extra coordinates, extincted magnitudes, and errors')
-    with h5py.File(FLAGS.out_file, 'a') as f:
+    with h5py.File(FLAGS.in_file, 'a') as f:
         N = len(f['dmod_true'])
         N_batch = (N + FLAGS.batch_size - 1) // FLAGS.batch_size
 

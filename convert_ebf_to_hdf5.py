@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-import argparse
-import subprocess
-
-
 import os
 import sys
 import h5py
@@ -36,6 +32,7 @@ def set_logger():
     logger.addHandler(stream_handler)
     return logger
 
+
 if __name__ == '__main__':
     """ Converting ebf file into multiple hdf5 files """
     FLAGS = parse_cmd()
@@ -48,25 +45,19 @@ if __name__ == '__main__':
     logger.info(f'Mock file      : {FLAGS.mock_file}')
     logger.info(f'Extinction file: {FLAGS.ext_file}')
     logger.info(f'Output file    : {FLAGS.out_file}')
-    temp_file = f'{FLAGS.out_file}.temp'
 
-    # Convert ebf to HDF5
-    cmd = 'python convert_ebf_to_hdf5.py'\
-        ' --mock-file {} --ext-file {} --out-file {} --ijob {} --Njob {} --batch-size {}'
-    cmd = cmd.format(FLAGS.mock_file, FLAGS.ext_file, temp_file,
-                     FLAGS.ijob, FLAGS.Njob, FLAGS.batch_size)
-    logger.info(f'Running {cmd}')
-    subprocess.check_call(cmd.split(' '))
+    if os.path.exists(FLAGS.out_file):
+        logger.warning(f'Overwriting {FLAGS.out_file}')
+        os.remove(FLAGS.out_file)
 
-    # Convert ebf to HDF5
-    cmd = 'python apply_gmag_cut.py --in-file {} --out-file {}'
-    cmd = cmd.format(temp_file, FLAGS.out_file)
-    logger.info(f'Running {cmd}')
-    subprocess.check_call(cmd.split(' '))
+    # Converting EBF to HDF5
+    logger.info('Convert EBF to HDF5')
+    io.ebf_to_hdf5_split(
+        FLAGS.mock_file, FLAGS.out_file, conversion.ALL_MOCK_KEYS,
+        FLAGS.ijob, FLAGS.Njob, FLAGS.batch_size)
+    io.ebf_to_hdf5_split(
+        FLAGS.ext_file, FLAGS.out_file, conversion.ALL_EXT_KEYS,
+        FLAGS.ijob, FLAGS.Njob, FLAGS.batch_size)
 
-    # Convert ebf to HDF5
-    cmd = 'python calculate_properties.py --in-file {}'
-    cmd = cmd.format(FLAGS.out_file)
-    logger.info(f'Running {cmd}')
-    subprocess.check_call(cmd.split(' '))
+    logger.info('Done')
 
