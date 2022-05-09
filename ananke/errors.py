@@ -82,16 +82,20 @@ def calc_astrometric_errors(data, indices=(None, None), release=_DEFAULT_RELEASE
 
     # calculate RA and Dec error
     ra_cosdec_error, dec_error = astrometric.position_uncertainty(g_mag, release=release)
+    cosdec = np.cos(np.deg2rad(dec_true))
+    sindec = np.sin(np.deg2rad(dec_true))
+    ra_error = np.sqrt(
+        (ra_cosdec_error**2 + dec_error**2 * sindec**2) / cosdec**2)
     ra_cosdec_error = ra_cosdec_error * uas_to_deg
     dec_error = dec_error * uas_to_deg
-    ra_error = np.sqrt(
-        (ra_cosdec_error**2 - dec_error**2 * np.sin(dec_true)**2) / np.sin(dec_true)**2)
+    ra_error = ra_error * uas_to_deg
 
     err_data['ra'] = np.random.normal(ra_true, ra_error)
     err_data['dec'] = np.random.normal(dec_true, dec_error)
     err_data['parallax'] = np.random.normal(parallax_true, parallax_error)
     err_data['ra_error'] = ra_error
     err_data['dec_error'] = dec_error
+    err_data['ra_cosdec_error'] = ra_cosdec_error
     err_data['parallax_error'] = parallax_error
     err_data['parallax_over_error'] = err_data['parallax'] / parallax_error
 
