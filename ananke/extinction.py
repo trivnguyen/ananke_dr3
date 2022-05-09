@@ -1,4 +1,7 @@
 
+
+import numpy as np
+
 _DEFAULT_BANDS = ('g', 'bp', 'rp')
 
 _DEFAULT_LAWS_TEFF = {
@@ -67,6 +70,9 @@ def calc_extinction(data, bands=_DEFAULT_BANDS, indices=(None, None), ext_var='b
     dmod = data['dmod_true'][i_start: i_stop]
     N_batch = len(dmod)
 
+    # read extinction coefficient
+    a_0 = data['A0'][i_start: i_stop]
+
     # iterate over all bands
     ext_data = {}
     for band in bands:
@@ -75,13 +81,12 @@ def calc_extinction(data, bands=_DEFAULT_BANDS, indices=(None, None), ext_var='b
         phot_mean_mag_int = abs_to_app(phot_mean_mag_abs, dmod)
 
         # Calculate extincted apparent magnitude
-        a_0 = data['A0'][i_start: i_stop]
         if ext_var == 'teff':
             teff = data['teff'][i_start:i_stop]
             phot_mean_mag_true = app_to_ext(phot_mean_mag_int, band, a_0, teff, ext_var)
         elif ext_var == 'bminr':
-            bp_mag_true = data['phot_bp_mean_mag_true'][i_start: i_stop]
-            rp_mag_true = data['phot_rp_mean_mag_true'][i_start: i_stop]
+            bp_mag_true = data['phot_bp_mean_mag_abs'][i_start: i_stop]
+            rp_mag_true = data['phot_rp_mean_mag_abs'][i_start: i_stop]
             phot_mean_mag_true = app_to_ext(phot_mean_mag_int, band, a_0, bp_mag_true-rp_mag_true, ext_var)
 
         # Store the results
