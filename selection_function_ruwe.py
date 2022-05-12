@@ -22,10 +22,11 @@ def parse_cmd():
     parser = argparse.ArgumentParser()
     parser.add_argument('--in-file', required=True, help='Path to input file')
     parser.add_argument('--out-file', required=True, help='Path to output file')
-    parser.add_argument('--random-state', required=True, nargs=2, metavar=('save/load', 'path'),
-                        help='Save or load random state with path to file')
-    parser.add_argument('--selection', required=True, nargs='*',
-                        help='Selection maps to apply; Availabel options are [general, astrometry, ruwe1p4, rvs]')
+    parser.add_argument('--random-state', required=True,
+                        help='Path to random state. If not exist, create one.')
+    parser.add_argument(
+        '--selection', required=True, nargs='*',
+        help='Selection maps to apply; Available options are [general, astrometry, ruwe1p4, rvs]')
     parser.add_argument('--sf-data-dir', required=True, help='Path to selection function data directory')
     parser.add_argument('--batch-size', required=False, type=int, default=1000000,
                         help='Batch size')
@@ -35,7 +36,9 @@ def parse_cmd():
 
 def selection_function(ra, dec, gmag, rpmag, output, prng, sf_subset_map, sf_type, sf_general_map, selec_data = {}):
     # Check that the selection is in one of the four options
-    assert sf_type in ['general', 'astrometry', 'ruwe1p4', 'rvs'], "Selection type unrecognized. Availabel options are [general, astrometry, ruwe1p4, rvs]"
+    if not sf_type in ['general', 'astrometry', 'ruwe1p4', 'rvs']:
+        raise ValueError("Selection type unrecognized."/
+        "Available options are [general, astrometry, ruwe1p4, rvs]")
 
     # Pre-compute color needed for selection function
     g_grp_mag = gmag-rpmag
@@ -72,7 +75,8 @@ def selection_function(ra, dec, gmag, rpmag, output, prng, sf_subset_map, sf_typ
     if sf_type == 'general':
         selec_data[col_prob] = sf_general_map(source)
         selec_data[col_selected] = prng.rand(len(selec_data[col_prob]))<selec_data[col_prob]
-    # Find the selection probability and use random sampling for whether the object is selected in subsets of the sample
+    # Find the selection probability and use random sampling for
+    # whether the object is selected in subsets of the sample
     else:
         selec_data[col_prob] = sf_general_map(source)*sf_subset_map(source)
         selec_data[col_selected] = prng.rand(len(selec_data[col_prob]))<selec_data[col_prob]
@@ -134,24 +138,19 @@ if __name__ == '__main__':
     print(f'Total number of sources:{N}')
     N_batch = (N + FLAGS.batch_size - 1) // FLAGS.batch_size
 
-
     # Save or load the random state
-    if FLAGS.random_state[0] == 'save':
-        print("Saving random state")
-        prng = np.random.RandomState()
-        state = prng.get_state()
-        with open(FLAGS.random_state[1], 'wb') as frand:
-            pickle.dump(state, frand)
-    elif FLAGS.random_state[0] == 'load':
-        print('Loading random state')
-        with open(FLAGS.random_state[1], 'rb') as frand:
+    if os.path.exists(FLAGS.random_state):
+        print(f"Random state found. Reading from: {FLAGS.random_state}")
+        with open(FLAGS.random_state, 'rb') as frand:
             state = pickle.load(frand)
         prng = np.random.RandomState()
         prng.set_state(state)
     else:
-        print('Unexpected save/load instruction for random state')
-        sys.exit()
-
+        print(f"Cannot find random state. Creating one")
+        prng = np.random.RandomState()
+        state = prng.get_state()
+        with open(FLAGS.random_state, 'wb') as frand:
+            pickle.dump(state, frand)
 
     # Apply selection function
     for i_batch in range(N_batch):
