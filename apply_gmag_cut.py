@@ -9,7 +9,7 @@ import logging
 import astropy
 import astropy.units as u
 
-from ananke import io
+from ananke import extinction, io
 
 FLAGS = None
 def parse_cmd():
@@ -53,8 +53,10 @@ if __name__ == '__main__':
             i_stop = i_start + FLAGS.batch_size
 
             # Get G magnitude
-            g_mag = in_f['phot_g_mean_mag_abs'][i_start: i_stop]
-            select = (3 <= g_mag) & (g_mag <= 21)
+            g_mag_abs = in_f['phot_g_mean_mag_abs'][i_start: i_stop]
+            dmod_true = in_f['dmod_true'][i_start: i_stop]
+            g_mag_int = extinction.abs_to_app(g_mag_abs, dmod_true)
+            select = (3 <= g_mag_int) & (g_mag_int <= 21)
             for key, val in in_f.items():
                 io.append_dataset(out_f, key, val[i_start: i_stop][select])
     out_f.close()
