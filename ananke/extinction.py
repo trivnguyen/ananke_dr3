@@ -35,8 +35,12 @@ _DEFAULT_LAWS_BMINR = {
 }
 
 def abs_to_app(abs_mag, dmod):
-    ''' Convert abs magnitude to apparent magnitude given distance modulus '''
+    ''' Convert absolute magnitude to apparent magnitude given distance modulus '''
     return abs_mag + dmod
+
+def app_to_abs(app_mag, dmod):
+    ''' Convert apparent magnitude to absolute magnitude given distance modulus '''
+    return app_mag + dmod
 
 def app_to_ext(mag, band, a_0, X, ext_var):
     ''' Convert apparent magnitude to extincted magnitude given A0 and Teff/BP-RP '''
