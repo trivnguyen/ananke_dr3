@@ -15,6 +15,10 @@ FLAGS = None
 def parse_cmd():
     parser = argparse.ArgumentParser()
     parser.add_argument('--in-file', required=True, help='Path to output file')
+    parser.add_argument('--extrapolate', required=False, action='store_true',
+                        help='Enable to extrapolate')
+    parser.add_argument('--extinction-var', required=False, default='bminr', choices=('bminr', 'log_teff'),
+                        help='Variable to calculate extinction coefficient')
     parser.add_argument('--batch-size', required=False, type=int, default=1000000,
                         help='Batch size')
     return parser.parse_args()
@@ -52,7 +56,9 @@ if __name__ == '__main__':
             io.append_dataset_dict(f, data, overwrite=False)
 
             # calculate extinction
-            data = extinction.calc_extinction(f, indices=indices)
+            data = extinction.calc_extinction(
+                f, indices=indices, ext_var=FLAGS.extinction_var,
+                extrapolate=FLAGS.extrapolate)
             io.append_dataset_dict(f, data, overwrite=False)
 
             # calculate error

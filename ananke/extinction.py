@@ -42,15 +42,25 @@ def app_to_abs(app_mag, dmod):
     ''' Convert apparent magnitude to absolute magnitude given distance modulus '''
     return app_mag + dmod
 
-def app_to_ext(mag, band, a_0, X, ext_var):
-    ''' Convert apparent magnitude to extincted magnitude given A0 and Teff/BP-RP '''
+def app_to_ext(mag, band, a_0, X, ext_var, extrapolate=True):
+    ''' Convert apparent magnitude to extincted magnitude given A0 and Teff/BP-RP
+    Args:
+    - mag:
+    - band:
+    - a_0:
+    - X:
+    - ext_var:
+    - extrapolate: if True, extrapolate X outside range to nearest X
+
+    Returns:
+    '''
     # Check which extinction law to use
-    if ext_var == 'teff':
+    if ext_var == 'log_teff':
         X_min = 3500./5040.
         X_max = 10000./5040.
 
         # Normalize Teff and set the extinction law coeff.
-        X = X/5040
+        X = (10**X)/5040
         coeff = _DEFAULT_LAWS_TEFF[band]
     elif ext_var == 'bminr':
         X_min = -0.06
@@ -59,13 +69,23 @@ def app_to_ext(mag, band, a_0, X, ext_var):
         # Set the extinction law coeff.
         coeff = _DEFAULT_LAWS_BMINR[band]
 
+    if extrapolate:
+        if isinstance(X, (int, float)):
+            X = min(X, X_max)
+            X = max(X, X_min)
+        else:
+            X[X < X_min] = X_min
+            X[X > X_max] = X_max
+
     k_mag = coeff[0] + coeff[1] * X + coeff[2] * X**2 + coeff[3] * X**3 + \
             coeff[4] * a_0 + coeff[5] * a_0**2 + coeff[6] * a_0**3 + \
             coeff[7] * X * a_0 + coeff[8] * a_0 * X**2 + coeff[9] * X * a_0**2
     return np.where((X < X_min) | (X > X_max), np.nan,
                     mag + k_mag*a_0)
 
-def calc_extinction(data, bands=_DEFAULT_BANDS, indices=(None, None), ext_var='bminr'):
+def calc_extinction(
+    data, bands=_DEFAULT_BANDS, indices=(None, None),
+    ext_var='bminr', extrapolate=True):
     ''' Calculate all extincted magnitude '''
 
     i_start, i_stop = indices
@@ -87,14 +107,18 @@ def calc_extinction(data, bands=_DEFAULT_BANDS, indices=(None, None), ext_var='b
         # Calculate extincted apparent magnitude
         if ext_var == 'teff':
             teff = data['teff'][i_start:i_stop]
-            phot_mean_mag_true = app_to_ext(phot_mean_mag_int, band, a_0, teff, ext_var)
+            phot_mean_mag_true = app_to_ext(
+                phot_mean_mag_int, band, a_0, teff, ext_var, extrapolate=extrapolate)
         elif ext_var == 'bminr':
             bp_mag_true = data['phot_bp_mean_mag_abs'][i_start: i_stop]
             rp_mag_true = data['phot_rp_mean_mag_abs'][i_start: i_stop]
-            phot_mean_mag_true = app_to_ext(phot_mean_mag_int, band, a_0, bp_mag_true-rp_mag_true, ext_var)
+            phot_mean_mag_true = app_to_ext(
+                phot_mean_mag_int, band, a_0, bp_mag_true-rp_mag_true, ext_var,
+                extrapolate=extrapolate)
 
         # Store the results
         ext_data[f'phot_{band}_mean_mag_int'] = phot_mean_mag_int
         ext_data[f'phot_{band}_mean_mag_true'] = phot_mean_mag_true
 
     return ext_data
+
