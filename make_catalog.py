@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 
-import argparse
-import subprocess
-
-
 import os
 import sys
 import h5py
 import argparse
 import logging
+import subprocess
 
 import astropy
 import astropy.units as u
