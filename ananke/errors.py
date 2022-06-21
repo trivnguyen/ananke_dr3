@@ -10,25 +10,50 @@ from . import coordinates
 
 _DEFAULT_RELEASE = 'dr3'
 
-def bminr_to_vmini(bminr):
-    ''' Convert Gaia G_BP-G_RP to V-I '''
-    vmini_max = 5
-    vmini_min = -0.4
-    vmini = np.linspace(vmini_min, vmini_max, 1000)
-    return interp1d(vmini_to_bminr(vmini), vmini, bounds_error=False)(bminr)
-
-def vmini_to_bminr(vmini):
+def vmini_to_bminr(vmini, extrapolate=False):
     ''' Convert V-I to Gaia G_BP-G_RP '''
     vmini_max = 5
     vmini_min = -0.4
+
+    if extrapolate:
+        if isinstance(vmini, (int, float)):
+            vmini = min(vmini, vmini_max)
+            vmini = max(vmini, vmini_min)
+        else:
+            vmini[vmini < vmini_min] = vmini_min
+            vmini[vmini > vmini_max] = vmini_max
+
     return np.where((vmini < vmini_min) | (vmini > vmini_max), np.nan,
                     -0.03298 + 1.259 * vmini - 0.1279 * vmini**2 + 0.01631 * vmini**3)
 
-def gminr_to_grvsminr(gminr):
+def bminr_to_vmini(bminr, extrapolate=False):
+    ''' Convert Gaia G_BP-G_RP to V-I '''
+    vmini_max = 5
+    vmini_min = -0.4
+    vmini = np.linspace(vmini_min, vmini_max, 10000)
+
+    if extrapolate:
+        return interp1d(
+            vmini_to_bminr(vmini), vmini, kind='nearest',
+            fill_value='extrapolate', bounds_error=False)(bminr)
+    else:
+        return interp1d(
+            vmini_to_bminr(vmini), vmini, bounds_error=False)(bminr)
+
+def gminr_to_grvsminr(gminr, extrapolate=False):
     ''' Convert Gaia G-G_RP to Gaia G_RVS-G_RP '''
     gminr_max = 1.7
     gminr_min = -0.15
     gminr_mid = 1.2
+
+    if extrapolate:
+        if isinstance(gminr, (int, float)):
+            gminr = min(gminr, gminr_max)
+            gminr = max(gminr, gminr_min)
+        else:
+            gminr[gminr < gminr_min] = gminr_min
+            gminr[gminr > gminr_max] = gminr_max
+
     res = np.empty_like(gminr)*np.nan
     # Case 1
     mask = ((gminr > gminr_min) & (gminr < gminr_mid))
@@ -38,7 +63,8 @@ def gminr_to_grvsminr(gminr):
     res[mask] = -4.0618 + 10.0187 * gminr[mask] - 9.0532 * gminr[mask]**2 + 2.6089 * gminr[mask]**3
     return res
 
-def calc_photometric_errors(data, indices=(None, None)):
+def calc_photometric_errors(
+        data, indices=(None, None), extrapolate=False):
     ''' Compute photometric errors and compute the error-convolved magnitudes '''
     i_start, i_stop = indices
     g_mag_true = data['phot_g_mean_mag_true'][i_start: i_stop]
@@ -48,7 +74,8 @@ def calc_photometric_errors(data, indices=(None, None)):
     err_data = {}
 
     # calculate V-I and G, Grp, Gbp error
-    vmini_true = bminr_to_vmini(bp_mag_true - rp_mag_true)
+    vmini_true = bminr_to_vmini(
+        bp_mag_true - rp_mag_true, extrapolate=extrapolate)
     g_mag_error = photometric.g_magnitude_uncertainty(g_mag_true)
     bp_mag_error = photometric.bp_magnitude_uncertainty(g_mag_true, vmini_true)
     rp_mag_error = photometric.rp_magnitude_uncertainty(g_mag_true, vmini_true)
@@ -63,7 +90,8 @@ def calc_photometric_errors(data, indices=(None, None)):
 
     return err_data
 
-def calc_astrometric_errors(data, indices=(None, None), release=_DEFAULT_RELEASE):
+def calc_astrometric_errors(
+        data, indices=(None, None), release=_DEFAULT_RELEASE):
     ''' Compute astrometric errors and compute the error-convolved data '''
     i_start, i_stop = indices
     uas_to_mas = u.uas.to(u.mas)   # conversion from micro-arcsec to milli-arcsec
@@ -78,10 +106,12 @@ def calc_astrometric_errors(data, indices=(None, None), release=_DEFAULT_RELEASE
     err_data = {}
 
     # calculate parallax error
-    parallax_error = astrometric.parallax_uncertainty(g_mag, release=release) * uas_to_mas
+    parallax_error = astrometric.parallax_uncertainty(
+        g_mag, release=release) * uas_to_mas
 
     # calculate RA and Dec error
-    ra_cosdec_error, dec_error = astrometric.position_uncertainty(g_mag, release=release)
+    ra_cosdec_error, dec_error = astrometric.position_uncertainty(
+        g_mag, release=release)
     cosdec = np.cos(np.deg2rad(dec_true))
     sindec = np.sin(np.deg2rad(dec_true))
     ra_error = np.sqrt(
@@ -116,7 +146,8 @@ def calc_astrometric_errors(data, indices=(None, None), release=_DEFAULT_RELEASE
 
     return err_data
 
-def calc_spectroscopic_errors(data, indices=(None, None)):
+def calc_spectroscopic_errors(
+        data, indices=(None, None), extrapolate=False):
     ''' Caculate spectroscopic error and error-convoled data '''
     i_start, i_stop = indices
     g_mag_true = data['phot_g_mean_mag_true'][i_start: i_stop]
@@ -126,14 +157,19 @@ def calc_spectroscopic_errors(data, indices=(None, None)):
 
     # No PyGaia function for this yet; implementing calculation from Robyn's communication
     # rv_error = np.zeros_like(rv)
-    # Calculate GRVS-G from G-GRP, error for RV, and the correction factor
-    grvs_true = gminr_to_grvsminr(g_mag_true - rp_mag_true) + rp_mag_true
-    rv_error = np.where(teff < 6500, 0.12 + 6.0 * np.exp(0.9*(grvs_true - 14.0)),
-                        0.4 + 20.0 * np.exp(0.8*(grvs_true - 12.75)))
+    # Calculate GRVS-G from G-GRP, error for RV
+    grvs_true = gminr_to_grvsminr(
+        g_mag_true - rp_mag_true, extrapolate=extrapolate) + rp_mag_true
+    rv_error = np.where(
+        teff < 6500, 0.12 + 6.0 * np.exp(0.9*(grvs_true - 14.0)),
+        0.4 + 20.0 * np.exp(0.8*(grvs_true - 12.75)))
+
+    # Calculate RV error correction
     grvs_min = 8.0
     grvs_true[grvs_true < grvs_min] = grvs_min
-    rv_error_corr = np.where(grvs_true > 12.0, 16.554 - 2.4899 * grvs_true + 0.09933 * grvs_true**2,
-                             0.318 + 0.3884 * grvs_true - 0.02778 * grvs_true**2)
+    rv_error_corr = np.where(
+        grvs_true > 12.0, 16.554 - 2.4899 * grvs_true + 0.09933 * grvs_true**2,
+        0.318 + 0.3884 * grvs_true - 0.02778 * grvs_true**2)
 
     err_data = {}
     err_data['radial_velocity'] = np.random.normal(rv, rv_error)
@@ -141,12 +177,16 @@ def calc_spectroscopic_errors(data, indices=(None, None)):
     err_data['radial_velocity_error_corr_factor'] = rv_error_corr
     return err_data
 
-def calc_errors(data, indices=(None, None), release=_DEFAULT_RELEASE):
+def calc_errors(data, indices=(None, None), extrapolate=False,
+                release=_DEFAULT_RELEASE):
     ''' Calculate all errors '''
     err_data = {}
-    err_data.update(calc_photometric_errors(data, indices))
-    err_data.update(calc_astrometric_errors(data, indices, release=release))
-    err_data.update(calc_spectroscopic_errors(data, indices))
+    err_data.update(
+        calc_photometric_errors(data, indices, extrapolate=extrapolate))
+    err_data.update(
+        calc_astrometric_errors(data, indices, release=release))
+    err_data.update(
+        calc_spectroscopic_errors(data, indices, extrapolate=extrapolate))
     return err_data
 
 

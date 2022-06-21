@@ -15,9 +15,12 @@ FLAGS = None
 def parse_cmd():
     parser = argparse.ArgumentParser()
     parser.add_argument('--in-file', required=True, help='Path to output file')
-    parser.add_argument('--extrapolate', required=False, action='store_true',
-                        help='Enable to extrapolate')
-    parser.add_argument('--extinction-var', required=False, default='bminr', choices=('bminr', 'log_teff'),
+    parser.add_argument('--ext-extrapolate', required=False, action='store_true',
+                        help='Enable to extrapolate for extinction calculation')
+    parser.add_argument('--err-extrapolate', required=False, action='store_true',
+                        help='Enable to extrapolate for error calculation')
+    parser.add_argument('--ext-var', required=False, default='bminr',
+                        choices=('bminr', 'log_teff'),
                         help='Variable to calculate extinction coefficient')
     parser.add_argument('--batch-size', required=False, type=int, default=1000000,
                         help='Batch size')
@@ -42,6 +45,13 @@ if __name__ == '__main__':
     # Read in and calculate extinction magnitude
     logger.info('Calculate extra coordinates, extincted magnitudes, and errors')
     with h5py.File(FLAGS.in_file, 'a') as f:
+        # Add header
+        f.attrs.update({
+            "ext-extrapolate": FLAGS.ext_extrapolate,
+            "err-extrapolate": FLAGS.err_extrapolate,
+            "ext-var": FLAGS.ext_var,
+        })
+
         N = len(f['dmod_true'])
         N_batch = (N + FLAGS.batch_size - 1) // FLAGS.batch_size
 
@@ -57,12 +67,13 @@ if __name__ == '__main__':
 
             # calculate extinction
             data = extinction.calc_extinction(
-                f, indices=indices, ext_var=FLAGS.extinction_var,
-                extrapolate=FLAGS.extrapolate)
+                f, indices=indices, ext_var=FLAGS.ext_var,
+                extrapolate=FLAGS.ext_extrapolate)
             io.append_dataset_dict(f, data, overwrite=False)
 
             # calculate error
-            data = errors.calc_errors(f, indices=indices)
+            data = errors.calc_errors(
+                f, indices=indices, extrapolate=FLAGS.err_extrapolate)
             io.append_dataset_dict(f, data, overwrite=False)
 
     logger.info('Done')

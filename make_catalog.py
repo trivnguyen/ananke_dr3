@@ -21,9 +21,11 @@ def parse_cmd():
     parser.add_argument('--out-file', required=True, help='Path to output file')
     parser.add_argument('--ijob', type=int, default=0, help='Job index')
     parser.add_argument('--Njob', type=int, default=1, help='Total number of jobs')
-    parser.add_argument('--extrapolate', required=False, action='store_true',
-                        help='Enable to extrapolate')
-    parser.add_argument('--extinction-var', required=False, default='bminr', choices=('bminr', 'log_teff'),
+    parser.add_argument('--ext-extrapolate', required=False, action='store_true',
+                        help='Enable to extrapolate extinction calculation')
+    parser.add_argument('--err-extrapolate', required=False, action='store_true',
+                        help='Enable to extrapolate error calculation')
+    parser.add_argument('--ext-var', required=False, default='bminr', choices=('bminr', 'log_teff'),
                         help='Variable to calculate extinction coefficient')
     parser.add_argument('--batch-size', required=False, type=int, default=1000000,
                         help='Batch size')
@@ -46,12 +48,12 @@ if __name__ == '__main__':
 
     logger = set_logger()
 
-    logger.info('Create mock catalog with settings:')
-    logger.info(f'Job: [{FLAGS.ijob} / {FLAGS.Njob}]')
-    logger.info(f'Batch size: {FLAGS.batch_size}')
-    logger.info(f'Mock file      : {FLAGS.mock_file}')
-    logger.info(f'Extinction file: {FLAGS.ext_file}')
-    logger.info(f'Output file    : {FLAGS.out_file}')
+    #logger.info('Create mock catalog with settings:')
+    #logger.info(f'Job: [{FLAGS.ijob} / {FLAGS.Njob}]')
+    #logger.info(f'Batch size: {FLAGS.batch_size}')
+    #logger.info(f'Mock file      : {FLAGS.mock_file}')
+    #logger.info(f'Extinction file: {FLAGS.ext_file}')
+    #logger.info(f'Output file    : {FLAGS.out_file}')
     if FLAGS.cache_file is None:
         temp_file = f'{FLAGS.out_file}.temp'
     else:
@@ -75,10 +77,12 @@ if __name__ == '__main__':
     subprocess.check_call(cmd.split(' '))
 
     # Convert ebf to HDF5
-    cmd = 'python calculate_properties.py --in-file {} --extinction-var {}'
-    if FLAGS.extrapolate:
-        cmd += ' --extrapolate'
-    cmd = cmd.format(FLAGS.out_file, FLAGS.extinction_var)
+    cmd = 'python calculate_properties.py --in-file {} --ext-var {}'
+    if FLAGS.ext_extrapolate:
+        cmd += ' --ext-extrapolate'
+    if FLAGS.err_extrapolate:
+        cmd == ' --err-extrapolate'
+    cmd = cmd.format(FLAGS.out_file, FLAGS.ext_var)
     logger.info(f'Running {cmd}')
     subprocess.check_call(cmd.split(' '))
 
