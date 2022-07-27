@@ -9,7 +9,7 @@ import logging
 import astropy
 import astropy.units as u
 
-from ananke import coordinates, conversion, errors, extinction, io
+from ananke import coordinates, conversion, errors, extinction, io, flags
 
 FLAGS = None
 def parse_cmd():
@@ -74,6 +74,10 @@ if __name__ == '__main__':
             # calculate error
             data = errors.calc_errors(
                 f, indices=indices, extrapolate=FLAGS.err_extrapolate)
+            io.append_dataset_dict(f, data, overwrite=False)
+
+            # calculate flags
+            data = flags.calc_flags(f, indices=indices)
             io.append_dataset_dict(f, data, overwrite=False)
 
     logger.info('Done')
