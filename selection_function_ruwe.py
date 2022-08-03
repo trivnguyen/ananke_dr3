@@ -62,9 +62,9 @@ def selection_function(
         id_G_GRP_ruwe_u = np.where(g_grp_mag > G_GRP_ceil)[0]
 
         logger.info(
-            f"{len(id_G_GRP_ruwe_l} sources found to have color redder than RUWE1p4 edge")
+            f"{len(id_G_GRP_ruwe_l)} sources found to have color redder than RUWE1p4 edge")
         logger.info(
-            f"{len(id_G_GRP_ruwe_u} sources found to have color bluer than RUWE1p4 edge")
+            f"{len(id_G_GRP_ruwe_u)} sources found to have color bluer than RUWE1p4 edge")
 
         # Manually set the out of bound colors to the closest bin value
         g_grp_mag[id_G_GRP_ruwe_l] = G_GRP_floor + 0.1 # Add a margin to prevent numerical error
