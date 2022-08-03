@@ -1,7 +1,7 @@
 from scipy.interpolate import griddata
 import numpy as np
 
-d = np.genfromtxt('../data/nodustWD_mass_bound_valid.csv', delimiter=',', names=True)
+d = np.genfromtxt('/work2/08052/tg873515/stampede2/ananke_fire_gaia_dr3/ananke_dr3/data/nodustWD_mass_bound_valid.csv', delimiter=',', names=True)
 
 def feh_to_Z(feh, solar_Z = 0.0152):
     """ Convert [Fe/H] to Z """
