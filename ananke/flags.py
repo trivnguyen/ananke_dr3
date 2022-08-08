@@ -1,7 +1,9 @@
 from scipy.interpolate import griddata
 import numpy as np
 
-d = np.genfromtxt('/work2/08052/tg873515/stampede2/ananke_fire_gaia_dr3/ananke_dr3/data/nodustWD_mass_bound_valid.csv', delimiter=',', names=True)
+from . import errors
+
+d = np.genfromtxt('ananke/data/nodustWD_mass_bound_valid.csv', delimiter=',', names=True)
 
 def feh_to_Z(feh, solar_Z = 0.0152):
     """ Convert [Fe/H] to Z """
@@ -15,16 +17,78 @@ def flag_WD(data, indices=(None, None)):
     Mini = data['mini'][i_start: i_stop]
 
     Mini_bounds = griddata((d['Z'], d['logage']), d['mass_bound'], (Z, logage), method='linear', fill_value=np.nan)
-    
-    flag_data = {}
 
     with np.errstate(invalid='ignore'):
-        flag_data['flag_WD'] = np.where((Mini > Mini_bounds), 1, 0)
+        return np.where((Mini > Mini_bounds), '1', '0')
     
-    return flag_data
 
-def calc_flags(data, indices=(None, None)):
-    ''' Calculate all flags '''
+def flag_photo_err_extrapolate(data, indices=(None, None), extrapolate=False):
+    """ Set the flag for extrapolated photometric error calculation """
+    if not extrapolate:
+        return np.where(True, '0', '1')
+    else:
+        i_start, i_stop = indices
+
+        bp_mag_true = data['phot_bp_mean_mag_true'][i_start: i_stop]
+        rp_mag_true = data['phot_rp_mean_mag_true'][i_start: i_stop]
+        bminr = bp_mag_true - rp_mag_true
+
+        vmini_max = 5
+        vmini_min = -0.4
+        bminr_max = errors.vmini_to_bminr(vmini_max,extrapolate=extrapolate)
+        bminr_min = errors.vmini_to_bminr(vmini_min,extrapolate=extrapolate)
+
+        return np.where((bminr < bminr_min) | (bminr > bminr_max), '1', '0')
+
+def flag_spect_err_extrapolate(data, indices=(None, None), extrapolate=False):
+    """ Set the flag for extrapolated spectroscopic error calculation """
+    if not extrapolate:
+        return np.where(True, '0', '1')
+    else:
+        i_start, i_stop = indices
+
+        gminr_max = 1.7
+        gminr_min = -0.15
+
+        g_mag_true = data['phot_g_mean_mag_true'][i_start: i_stop]
+        rp_mag_true = data['phot_rp_mean_mag_true'][i_start: i_stop]
+        gminr = g_mag_true - rp_mag_true
+
+        return np.where((gminr < gminr_min) | (gminr > gminr_max), '1', '0')
+
+def flag_extinct_extrapolate(data, ext_var, indices=(None, None), extrapolate=False):
+    """ Set the flag for extrapolated extinction law """
+    if not extrapolate:
+        return np.where(True, '0', '1')
+    else:
+        i_start, i_stop = indices
+
+        if ext_var == 'teff':
+            X = data['teff'][i_start:i_stop]
+            X_min = 3500./5040.
+            X_max = 10000./5040.
+        
+        elif ext_var == 'bminr':
+            X = data['phot_bp_mean_mag_abs'][i_start: i_stop] - data['phot_rp_mean_mag_abs'][i_start: i_stop]
+            X_min = -0.06
+            X_max = 2.5
+
+        return np.where((X < X_min) | (X > X_max), '1', '0')
+
+def calc_flags(data, indices=(None, None), ext_var='bminr', ext_extrapolate=False, err_extrapolate=False):
+    ''' Calculate all flags and combine into a bit mask '''
     flag_data = {}
-    flag_data.update(flag_WD(data, indices))
+
+    # Bit 0: Extinction extrapolation flag 
+    flag0 = flag_extinct_extrapolate(data, ext_var, indices, ext_extrapolate)
+    # Bit 1: Photometric error extrapolation flag
+    flag1 = flag_photo_err_extrapolate(data, indices, err_extrapolate)
+    # Bit 2: Spectroscopic error extrapolation flag
+    flag2 = flag_spect_err_extrapolate(data, indices, err_extrapolate)
+    # Bit 3: WD flag
+    flag3 = flag_WD(data, indices)
+
+    # Combine bits
+    flag_data['flags'] = [int(i + j + k + l,2) for i, j, k, l in zip(flag3, flag2, flag1, flag0)]
+
     return flag_data
