@@ -77,7 +77,10 @@ if __name__ == '__main__':
             io.append_dataset_dict(f, data, overwrite=False)
 
             # calculate flags
-            data = flags.calc_flags(f, indices=indices)
+            data = flags.calc_flags(
+                f, indices=indices, ext_var=FLAGS.ext_var, 
+                ext_extrapolate=FLAGS.ext_extrapolate, 
+                err_extrapolate=FLAGS.err_extrapolate)
             io.append_dataset_dict(f, data, overwrite=False)
 
     logger.info('Done')

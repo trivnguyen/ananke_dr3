@@ -25,7 +25,8 @@ def flag_WD(data, indices=(None, None)):
 def flag_photo_err_extrapolate(data, indices=(None, None), extrapolate=False):
     """ Set the flag for extrapolated photometric error calculation """
     if not extrapolate:
-        return np.where(True, '0', '1')
+        i_start, i_stop = indices
+        return np.array(['0']*(i_stop-i_start))
     else:
         i_start, i_stop = indices
 
@@ -43,7 +44,8 @@ def flag_photo_err_extrapolate(data, indices=(None, None), extrapolate=False):
 def flag_spect_err_extrapolate(data, indices=(None, None), extrapolate=False):
     """ Set the flag for extrapolated spectroscopic error calculation """
     if not extrapolate:
-        return np.where(True, '0', '1')
+        i_start, i_stop = indices
+        return np.array(['0']*(i_stop-i_start))
     else:
         i_start, i_stop = indices
 
@@ -59,7 +61,8 @@ def flag_spect_err_extrapolate(data, indices=(None, None), extrapolate=False):
 def flag_extinct_extrapolate(data, ext_var, indices=(None, None), extrapolate=False):
     """ Set the flag for extrapolated extinction law """
     if not extrapolate:
-        return np.where(True, '0', '1')
+        i_start, i_stop = indices
+        return np.array(['0']*(i_stop-i_start))
     else:
         i_start, i_stop = indices
 
