@@ -22,6 +22,7 @@ ALL_MOCK_KEYS = {
     'age': 'age',
     'teff': 'teff',
     'grav': 'logg',
+    'lum': 'lum',
     'feh': 'feh',
     'alpha': 'alpha',
     'carbon': 'carbon',
