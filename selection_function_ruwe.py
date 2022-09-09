@@ -208,7 +208,7 @@ if __name__ == '__main__':
 
         # Create an index list for identifying what stars are selected
         index_selec = np.arange(i_start, i_start+len(selec_data['selected_ruwe1p4']))
-        data_slice['index_in_mock'] = index_selec[selec_data['selected_ruwe1p4']]
+        # data_slice['index_in_mock'] = index_selec[selec_data['selected_ruwe1p4']]
 
         for key in f.keys():
             data_slice[key] = f[key][i_start: i_stop][selec_data['selected_ruwe1p4']]
