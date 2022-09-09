@@ -120,5 +120,13 @@ def calc_extinction(
         ext_data[f'phot_{band}_mean_mag_int'] = phot_mean_mag_int
         ext_data[f'phot_{band}_mean_mag_true'] = phot_mean_mag_true
 
+    # Store the extinction and true colors
+    ext_data['a_g_val'] = ext_data['phot_g_mean_mag_true'] - ext_data['phot_g_mean_mag_int']
+    ext_data['e_bp_min_rp_val'] = (ext_data['phot_bp_mean_mag_true'] - ext_data['phot_bp_mean_mag_int']) - \
+                                  (ext_data['phot_rp_mean_mag_true'] - ext_data['phot_rp_mean_mag_int'])
+    ext_data['bp_rp_true'] = ext_data['phot_bp_mean_mag_true'] - ext_data['phot_rp_mean_mag_true']
+    ext_data['bp_g_true'] = ext_data['phot_bp_mean_mag_true'] - ext_data['phot_g_mean_mag_true']
+    ext_data['g_rp_true'] = ext_data['phot_g_mean_mag_true'] - ext_data['phot_rp_mean_mag_true']
+
     return ext_data
 

@@ -187,6 +187,12 @@ def calc_errors(data, indices=(None, None), extrapolate=False,
         calc_astrometric_errors(data, indices, release=release))
     err_data.update(
         calc_spectroscopic_errors(data, indices, extrapolate=extrapolate))
+    
+    # Store colors
+    err_data['bp_rp'] = err_data['phot_bp_mean_mag'] - err_data['phot_rp_mean_mag']
+    err_data['bp_g'] = err_data['phot_bp_mean_mag'] - err_data['phot_g_mean_mag']
+    err_data['g_rp'] = err_data['phot_g_mean_mag'] - err_data['phot_rp_mean_mag']
+
     return err_data
 
 
