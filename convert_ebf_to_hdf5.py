@@ -9,7 +9,7 @@ import logging
 import astropy
 import astropy.units as u
 
-from ananke import coordinates, conversion, errors, extinction, io
+from ananke import coordinates, conversion, errors, extinction, io, flags
 
 FLAGS = None
 def parse_cmd():
