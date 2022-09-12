@@ -3,9 +3,29 @@
 
 import os
 import sys
+import argparse
 
 # Read in command line arguments
-gal, lsr, rslice = sys.argv[1:]
+def parse_cmd():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('gal', type=str, help='galaxy name')
+    parser.add_argument('lsr', type=int, help='lsr number')
+    parser.add_argument('rslice', type=int, help='rslice number')
+    parser.add_argument('-p', '--partition', type=str, default='skx-normal',
+                        help='slurm partition')
+    parser.add_argument('-t1', '--time-catalog', dest='t1', type=str, default='16:00:00',
+                        help='time of catalog job')
+    parser.add_argument('-t2', '--time-sf', dest='t2', type=str, default='4:00:00',
+                        help='time of selection function job')
+    return parser.parse_args()
+
+FLAGS = parse_cmd()
+gal = FLAGS.gal
+lsr = FLAGS.lsr
+rslice = FLAGS.rslice
+partition = FLAGS.partition
+t1 = FLAGS.t1
+t2 = FLAGS.t2
 name = f"{gal}-lsr-{lsr}-rslice-{rslice}"
 
 print(f'Galaxy, LSR, rslice: {gal}, {lsr}, {rslice}')
@@ -45,10 +65,10 @@ run_cmd = "srun -n1 -N1 python make_catalog.py "\
 sbatch_fn = os.path.join(submit_dir, "make_catalog.sh")
 with open(sbatch_fn, 'w') as f:
     f.write('#!/bin/bash\n')
-    f.write('#SBATCH -p skx-normal\n')
+    f.write('#SBATCH -p {}\n'.format(partition))
     f.write('#SBATCH -A TG-AST140023\n')
     f.write('#SBATCH --job-name {}\n'.format(name))
-    f.write('#SBATCH --time 16:00:00\n')
+    f.write('#SBATCH --time {}\n'.format(t1))
     f.write('#SBATCH --mail-type begin\n')
     f.write('#SBATCH --mail-type end\n')
     f.write('#SBATCH --mail-user tnguy@mit.edu\n')
@@ -83,10 +103,10 @@ run_cmd = "srun -n1 -N1 python selection_function_ruwe.py "\
 sbatch_fn = os.path.join(submit_dir, "selection_fn.sh")
 with open(sbatch_fn, 'w') as f:
     f.write('#!/bin/bash\n')
-    f.write('#SBATCH -p skx-normal\n')
+    f.write('#SBATCH -p {}\n'.format(partition))
     f.write('#SBATCH -A TG-AST140023\n')
     f.write('#SBATCH --job-name {}\n'.format(name))
-    f.write('#SBATCH --time 4:00:00\n')
+    f.write('#SBATCH --time {}\n'.format(t2))
     f.write('#SBATCH --mail-type begin\n')
     f.write('#SBATCH --mail-type end\n')
     f.write('#SBATCH --mail-user tnguy@mit.edu\n')
@@ -105,3 +125,4 @@ with open(submit_fn, 'w') as f:
     f.write('sbatch make_catalog.sh\n')
     f.write('sbatch --dependency=singleton selection_fn.sh\n')
 os.chmod(submit_fn, 0o744)
+
