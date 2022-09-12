@@ -1,7 +1,8 @@
 # Converting Ananke DR2 to Ananke DR3
 
-To install dependencies
+To start, clone to repo and install the dependencies using:
 ```
+git clone https://github.com/trivnguyen/ananke_dr3.git
 pip install -r requirements.txt
 ```
 
