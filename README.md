@@ -20,6 +20,6 @@ To change the partition, use `-p` or `--partition`
 (e.g. `python write_slurm.py m12f 1 8 --partition=normal`).
 The default alloc time for each job is 16 hours for the first job and 4 hours for the second job.
 To change the alloc time, use `-t1` or `--time-catalog` for the first job and `-t2` or `--time-sf`
-for the second job (e.g. `python write slurm.py m12f 1 8 -t1 1:00:00 --time-sf=2:00:00`)
+for the second job (e.g. `python write slurm.py m12f 1 8 -t1 1:00:00 --time-sf=2:00:00`).
 The time format uses the SLURM convention.
 
