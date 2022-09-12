@@ -9,9 +9,9 @@ pip install -r requirements.txt
 To submit a SLURM script for a given galaxy, lsr, and rslice, use `write_slurm.py`
 For example, to submit a job for M12f, LSR 1, rslice 8, run:
 ```
-    python write_slurm.py m12f 1 8
-    cd slurm_submit/m12f-lsr-1-rslice-8
-    ./submit_all.submit
+python write_slurm.py m12f 1 8
+cd slurm_submit/m12f-lsr-1-rslice-8
+./submit_all.submit
 ```
 This will submit two jobs. The first job creates a catalog from the `.ebf` file.
 The second job applies the selection function and is dependent on the first job.
