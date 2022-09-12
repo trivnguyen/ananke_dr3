@@ -51,8 +51,8 @@ out_file = os.path.join(
     f"lsr-{lsr}-rslice-{rslice}.{gal}-res7100-md-sliced-gcat-dr3.hdf5"
 )
 cache_file = os.path.join(
-    base_dir, f"{gal}/lsr-{lsr}/hdf5",
-    f"lsr-{lsr}-rslice-{rslice}.{gal}-res7100-md-sliced-gcat-dr3.hdf5"
+    base_dir, f"{gal}/lsr-{lsr}/preSF/cache",
+    f"lsr-{lsr}-rslice-{rslice}.{gal}-res7100-md-sliced-gcat-dr3.hdf5.temp"
 )
 
 # Command
