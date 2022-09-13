@@ -13,9 +13,9 @@ def parse_cmd():
     parser.add_argument('rslice', type=int, help='rslice number')
     parser.add_argument('-p', '--partition', type=str, default='skx-normal',
                         help='slurm partition')
-    parser.add_argument('-t1', '--time-catalog', dest='t1', type=str, default='16:00:00',
+    parser.add_argument('-t1', '--time-catalog', dest='t1', type=str, default='5:00:00',
                         help='time of catalog job')
-    parser.add_argument('-t2', '--time-sf', dest='t2', type=str, default='4:00:00',
+    parser.add_argument('-t2', '--time-sf', dest='t2', type=str, default='3:00:00',
                         help='time of selection function job')
     return parser.parse_args()
 
