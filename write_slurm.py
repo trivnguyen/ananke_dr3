@@ -97,7 +97,7 @@ random_state = os.path.join(
 
 run_cmd = "srun -n1 -N1 python selection_function_ruwe.py "\
     f"--in-file {in_file} --out-file {out_file} --random-state {random_state} "\
-    f"--sf-data-dir {sf_data_dir} --selection ruwe1p4"
+    f"--sf-data-dir {sf_data_dir} --selection ruwe1p4 rvs"
 
 # Create sbatch file to submit make_catalog
 sbatch_fn = os.path.join(submit_dir, "selection_fn.sh")
