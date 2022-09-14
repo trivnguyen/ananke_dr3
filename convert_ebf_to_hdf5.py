@@ -52,12 +52,20 @@ if __name__ == '__main__':
 
     # Converting EBF to HDF5
     logger.info('Convert EBF to HDF5')
-    io.ebf_to_hdf5_split(
-        FLAGS.mock_file, FLAGS.out_file, conversion.ALL_MOCK_KEYS,
-        FLAGS.ijob, FLAGS.Njob, FLAGS.batch_size)
-    io.ebf_to_hdf5_split(
-        FLAGS.ext_file, FLAGS.out_file, conversion.ALL_EXT_KEYS,
-        FLAGS.ijob, FLAGS.Njob, FLAGS.batch_size)
+    if FLAGS.ijob == 0 and FLAGS.Njob == 1:
+        io.ebf_to_hdf5(
+            FLAGS.mock_file, FLAGS.out_file, conversion.ALL_MOCK_KEYS,
+            FLAGS.batch_size)
+        io.ebf_to_hdf5(
+            FLAGS.ext_file, FLAGS.out_file, conversion.ALL_EXT_KEYS,
+            FLAGS.batch_size)
+    else:
+        io.ebf_to_hdf5_split(
+            FLAGS.mock_file, FLAGS.out_file, conversion.ALL_MOCK_KEYS,
+            FLAGS.ijob, FLAGS.Njob, FLAGS.batch_size)
+        io.ebf_to_hdf5_split(
+            FLAGS.ext_file, FLAGS.out_file, conversion.ALL_EXT_KEYS,
+            FLAGS.ijob, FLAGS.Njob, FLAGS.batch_size)
 
     logger.info('Done')
 

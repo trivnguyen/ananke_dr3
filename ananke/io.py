@@ -39,7 +39,27 @@ def ebf_to_hdf5(infile, outfile, keys, batch_size=100000):
     If given dict, change key name from dict key to dict val
     - batch_size: [int] batch size for converting large array that is difficult to fit to RAM
     '''
-    ebf_to_hdf5_split(infile, outfile, keys, 0, 1, batch_size)
+    # ebf_to_hdf5_split(infile, outfile, keys, 0, 1, batch_size)
+    # Get the total length
+    if isinstance(keys, dict):
+        test_key = list(keys.keys())[0]
+    else:
+        test_key = keys[0]
+    num_samples = ebf.getHeader(infile, f'/{test_key}').dim[0]
+
+    for key in keys:
+        print(key)
+        if isinstance(keys, dict):
+            new_key = keys[key]
+        else:
+            new_key = key
+        data = ebf.read(infile, f'/{key}')
+        with h5py.File(outfile, 'a') as f:
+            try:
+                append_dataset(f, new_key, data)
+            except:
+                print(new_key, data, batch)
+
 
 def ebf_to_hdf5_split(infile, outfile, keys, i_split=0, n_split=1, batch_size=100000):
     ''' Convert ebf file to hdf5 file
