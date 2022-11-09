@@ -13,6 +13,8 @@ def parse_cmd():
     parser.add_argument('rslice', type=int, help='rslice number')
     parser.add_argument('-p', '--partition', type=str, default='skx-normal',
                         help='slurm partition')
+    parser.add_argument('-A', '--accounting-group', type=str, default='TG-PHY210118',
+                        help='accounting group')
     parser.add_argument('-t1', '--time-catalog', dest='t1', type=str, default='5:00:00',
                         help='time of catalog job')
     parser.add_argument('-t2', '--time-sf', dest='t2', type=str, default='3:00:00',
@@ -26,6 +28,7 @@ rslice = FLAGS.rslice
 partition = FLAGS.partition
 t1 = FLAGS.t1
 t2 = FLAGS.t2
+account = FLAGS.accounting_group
 name = f"{gal}-lsr-{lsr}-rslice-{rslice}"
 
 print(f'Galaxy, LSR, rslice: {gal}, {lsr}, {rslice}')
@@ -66,12 +69,9 @@ sbatch_fn = os.path.join(submit_dir, "make_catalog.sh")
 with open(sbatch_fn, 'w') as f:
     f.write('#!/bin/bash\n')
     f.write('#SBATCH -p {}\n'.format(partition))
-    f.write('#SBATCH -A TG-AST140023\n')
+    f.write('#SBATCH -A {}\n'.format(account))
     f.write('#SBATCH --job-name {}\n'.format(name))
     f.write('#SBATCH --time {}\n'.format(t1))
-    f.write('#SBATCH --mail-type begin\n')
-    f.write('#SBATCH --mail-type end\n')
-    f.write('#SBATCH --mail-user tnguy@mit.edu\n')
     f.write('#SBATCH -o make_catalog.out\n')
     f.write('#SBATCH -e make_catalog.err\n')
     f.write('#SBATCH --nodes=1\n')
@@ -104,12 +104,9 @@ sbatch_fn = os.path.join(submit_dir, "selection_fn.sh")
 with open(sbatch_fn, 'w') as f:
     f.write('#!/bin/bash\n')
     f.write('#SBATCH -p {}\n'.format(partition))
-    f.write('#SBATCH -A TG-AST140023\n')
+    f.write('#SBATCH -A {}\n'.format(account))
     f.write('#SBATCH --job-name {}\n'.format(name))
     f.write('#SBATCH --time {}\n'.format(t2))
-    f.write('#SBATCH --mail-type begin\n')
-    f.write('#SBATCH --mail-type end\n')
-    f.write('#SBATCH --mail-user tnguy@mit.edu\n')
     f.write('#SBATCH -o selection_fn.out\n')
     f.write('#SBATCH -e selection_fn.err\n')
     f.write('#SBATCH --nodes=1\n')

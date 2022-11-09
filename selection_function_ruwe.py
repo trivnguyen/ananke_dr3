@@ -54,7 +54,8 @@ def selection_function(
     # Pre-compute color needed for selection function
     g_grp_mag = gmag-rpmag
 
-    # Pre-compute the index of data that requires manual adjustment in fitting ruwe1p4 and RVS selection functions
+    # Pre-compute the index of data that requires manual adjustment in
+    # fitting ruwe1p4 and RVS selection functions
     if sf_type == 'ruwe1p4':
         G_GRP_floor = -1.
         G_GRP_ceil = 7.
@@ -126,14 +127,14 @@ if __name__ == '__main__':
     config['data_dir'] = FLAGS.sf_data_dir
 
     # Fetch data
-    print("Fetching data...")
+    logger.info("Fetching data...")
     CoGII.fetch()
     CoGV.fetch(version='cog_v', subset='astrometry')
     CoGV.fetch(version='cog_v', subset='ruwe1p4')
     CoGV.fetch(version='cog_v', subset='rvs')
 
     # Load the general map
-    print("Loading general selection function...")
+    logger.info("Loading general selection function...")
     sf_general_map = CoGII.dr3_sf(version='modelAB',crowding=True)
 
     sf_subset_maps = []
@@ -168,6 +169,7 @@ if __name__ == '__main__':
         prng.set_state(state)
     else:
         logger.info(f"Cannot find random state. Creating one")
+        os.makedirs(os.path.dirname(FLAGS.random_state), exist_ok=True)
         prng = np.random.RandomState()
         state = prng.get_state()
         with open(FLAGS.random_state, 'wb') as frand:
@@ -219,3 +221,4 @@ if __name__ == '__main__':
 
     f.close()
     fo.close()
+
