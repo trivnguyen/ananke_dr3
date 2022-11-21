@@ -78,8 +78,8 @@ if __name__ == '__main__':
 
             # calculate flags
             data = flags.calc_flags(
-                f, indices=indices, ext_var=FLAGS.ext_var, 
-                ext_extrapolate=FLAGS.ext_extrapolate, 
+                f, indices=indices, ext_var=FLAGS.ext_var,
+                ext_extrapolate=FLAGS.ext_extrapolate,
                 err_extrapolate=FLAGS.err_extrapolate)
             io.append_dataset_dict(f, data, overwrite=False)
 

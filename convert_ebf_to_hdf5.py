@@ -9,7 +9,7 @@ import logging
 import astropy
 import astropy.units as u
 
-from ananke import coordinates, conversion, errors, extinction, io, flags
+from ananke import coordinates, conversion, extinction, io, flags
 
 FLAGS = None
 def parse_cmd():
@@ -36,7 +36,6 @@ def set_logger():
 if __name__ == '__main__':
     """ Converting ebf file into multiple hdf5 files """
     FLAGS = parse_cmd()
-
     logger = set_logger()
 
     logger.info('Create mock catalog with settings:')
@@ -52,6 +51,9 @@ if __name__ == '__main__':
 
     # Converting EBF to HDF5
     logger.info('Convert EBF to HDF5')
+
+    # NOTE: there was an issue with the EBF file if i=0 and N=1
+    # so this has to be called as a special case and not using ebf_to_hdf5_split
     if FLAGS.ijob == 0 and FLAGS.Njob == 1:
         io.ebf_to_hdf5(
             FLAGS.mock_file, FLAGS.out_file, conversion.ALL_MOCK_KEYS,
