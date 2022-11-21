@@ -5,5 +5,4 @@ h5py
 pygaia
 tqdm
 numba
-git+https://github.com/gaiaverse/selectionfunctions.git@main
 git+https://github.com/sanjibs/ebfpy.git@master
