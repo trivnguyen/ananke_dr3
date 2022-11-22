@@ -82,8 +82,8 @@ def calc_uncertainties(data, indices=(None, None), extrapolate=False):
 
     # calculate G, BP and RP errors
     g_mag_error = mag_uncertainties('G', g_mag_true)
-    bp_mag_error = mag_uncertainties("BP", g_mag_true)
-    rp_mag_error = mag_uncertainties("RP", g_mag_true)
+    bp_mag_error = mag_uncertainties("BP", bp_mag_true)
+    rp_mag_error = mag_uncertainties("RP", rp_mag_true)
 
     err_data = {}
     err_data['phot_g_mean_mag_error'] = g_mag_error
