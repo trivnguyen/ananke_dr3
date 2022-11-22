@@ -17,7 +17,7 @@ def append_dataset(fobj, key, data, overwrite=False):
         fobj.create_dataset(key, data=data, maxshape=(None,), chunks=True)
     else:
         if overwrite:
-            del dataset
+            del fobj[key]
             fobj.create_dataset(key, data=data, maxshape=(None,), chunks=True)
         else:
             N = dataset.shape[0]
