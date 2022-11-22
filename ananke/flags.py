@@ -69,8 +69,8 @@ def flag_extinct_extrapolate(data, ext_var, indices=(None, None), extrapolate=Fa
     else:
         i_start, i_stop = indices
 
-        if ext_var == 'teff':
-            X = data['teff'][i_start:i_stop]
+        if ext_var == 'log_teff':
+            X = (10**data['teff'][i_start:i_stop])/5040.
             X_min = 3500./5040.
             X_max = 10000./5040.
         
