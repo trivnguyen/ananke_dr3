@@ -22,11 +22,12 @@ def init_spline(spline_csv, band):
         Cubic spline interpolation function
 
     """
-    df = pd.read_csv(spline_csv).dropna()
+    df = pd.read_csv(spline_csv)
     band = band.upper()
     col_knots, col_coeff = f'knots_{band}', f'coeff_{band}'
 
-    return interpolate.BSpline(df[col_knots], df[col_coeff], 3, extrapolate=False)
+    return interpolate.BSpline(
+        df[col_knots].dropna(), df[col_coeff].dropna(), 3, extrapolate=False)
 
 def mag_uncertainties(band, mag, nobs=0, spline_csv=_SPLINE_CSV):
     """
@@ -60,7 +61,7 @@ def mag_uncertainties(band, mag, nobs=0, spline_csv=_SPLINE_CSV):
     spline = init_spline(spline_csv, band)
 
     # if magnitude is outside [4, 21], return NaN
-    __mag = np.where((mag < 4.) & (21. > mag), np.nan, mag)
+    __mag = np.where((4. <= mag) & (mag <= 21.), mag, np.nan)
 
     # compute log error
     log_u_mag = np.where(
