@@ -28,6 +28,7 @@ def append_dataset(fobj, key, data, overwrite=False):
 def append_dataset_dict(fobj, data_dict, overwrite=False):
     ''' Append multiple hdf5 dataset '''
     for key, data in data_dict.items():
+        print(key, data)
         append_dataset(fobj, key, data, overwrite)
 
 def ebf_to_hdf5(infile, outfile, keys, batch_size=100000):

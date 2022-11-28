@@ -10,7 +10,7 @@ import subprocess
 import astropy
 import astropy.units as u
 
-from ananke import coordinates, conversion, errors, extinction, io, flags
+from ananke import coordinates, errors, extinction, io, flags
 
 FLAGS = None
 def parse_cmd():

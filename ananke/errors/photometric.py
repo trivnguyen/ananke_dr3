@@ -60,14 +60,16 @@ def mag_uncertainties(band, mag, nobs=0, spline_csv=_SPLINE_CSV):
     # initialize spline
     spline = init_spline(spline_csv, band)
 
-    # if magnitude is outside [4, 21], return NaN
-    __mag = np.where((4. <= mag) & (mag <= 21.), mag, np.nan)
+    # if magnitude is outside [4, 21], set to nearest bound
+    #mag[mag <= 4] = 4.02
+    #mag[mag >= 21.] = 20.98
+    #mag = np.where((4. <= mag) & (mag <= 21.), mag, np.nan)
 
     # compute log error
     log_u_mag = np.where(
         nobs > 0,
-        spline(__mag) - np.log10(np.sqrt(nobs) / np.sqrt(_NOBS[band])),
-        spline(__mag),
+        spline(mag) - np.log10(np.sqrt(nobs) / np.sqrt(_NOBS[band])),
+        spline(mag),
     )
     u_mag = 10**log_u_mag
     return u_mag

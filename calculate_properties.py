@@ -9,7 +9,7 @@ import logging
 import astropy
 import astropy.units as u
 
-from ananke import coordinates, conversion, errors, extinction, io, flags
+from ananke import coordinates, errors, extinction, io, flags
 
 FLAGS = None
 def parse_cmd():
@@ -74,6 +74,9 @@ if __name__ == '__main__':
             # calculate error
             data = errors.calc_errors(
                 f, indices=indices, extrapolate=FLAGS.err_extrapolate)
+            data['bp_rp'] = data['phot_bp_mean_mag'] - data['phot_rp_mean_mag']
+            data['bp_g'] = data['phot_bp_mean_mag'] - data['phot_g_mean_mag']
+            data['g_rp'] = data['phot_g_mean_mag'] - data['phot_rp_mean_mag']
             io.append_dataset_dict(f, data, overwrite=False)
 
             # calculate flags
