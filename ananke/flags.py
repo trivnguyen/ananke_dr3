@@ -108,3 +108,4 @@ def calc_flags(data, indices=(None, None), ext_var='bminr',
         int(i + j + k + l,2) for i, j, k, l in zip(flag3, flag2, flag1, flag0)]
 
     return flag_data
+
