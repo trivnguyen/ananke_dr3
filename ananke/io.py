@@ -2,24 +2,25 @@
 import os
 import h5py
 import logging
-logger = logging.getLogger(__name__)
+
+LOGGER = logging.getLogger(__name__)
 
 import numpy as np
 try:
     import ebf
 except ImportError:
-    logger.warn('Cannot import ebf')
+    LOGGER.warn('Cannot import ebf')
 
 def append_dataset(fobj, key, data, overwrite=False):
     ''' Append an hdf5 dataset '''
-    dataset = fobj.get(key)
-    if dataset is None:
+    if fobj.get(key) is None:
         fobj.create_dataset(key, data=data, maxshape=(None,), chunks=True)
     else:
         if overwrite:
             del fobj[key]
             fobj.create_dataset(key, data=data, maxshape=(None,), chunks=True)
         else:
+            dataset = fobj.get(key)
             N = dataset.shape[0]
             N_data = len(data)
             dataset.resize(N + N_data, axis=0)
@@ -57,8 +58,7 @@ def ebf_to_hdf5(infile, outfile, keys, batch_size=100000):
             try:
                 append_dataset(f, new_key, data)
             except:
-                print(new_key, data, batch)
-
+                LOGGER.warn(new_key, data, batch)
 
 def ebf_to_hdf5_split(infile, outfile, keys, i_split=0, n_split=1, batch_size=100000):
     ''' Convert ebf file to hdf5 file
@@ -87,6 +87,8 @@ def ebf_to_hdf5_split(infile, outfile, keys, i_split=0, n_split=1, batch_size=10
     batches[-1] = stop
 
     for key in keys:
+        LOGGER.info(key)
+        print(key)
         if isinstance(keys, dict):
             new_key = keys[key]
         else:
@@ -97,5 +99,5 @@ def ebf_to_hdf5_split(infile, outfile, keys, i_split=0, n_split=1, batch_size=10
                 try:
                     append_dataset(f, new_key, data)
                 except:
-                    print(new_key, data, batch)
+                    LOGGER.warn(new_key, data, batch)
 
