@@ -2,36 +2,24 @@
 
 import os
 import sys
-import h5py
 import argparse
 import logging
-import subprocess
+import time
+from collections import OrderedDict
 
-import astropy
-import astropy.units as u
+import ananke.scripts.ebf_to_hdf5
+import ananke.scripts.gmag_cut
+import ananke.scripts.rotate_coords
+import ananke.scripts.calc_props
+import ananke.scripts.selection_function
 
-from ananke import coordinates, errors, extinction, io, flags
-
-FLAGS = None
-def parse_cmd():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--mock-file', required=False, help='Path to mock file')
-    parser.add_argument('--ext-file', required=False, help='Path to extinction file')
-    parser.add_argument('--cache-file', required=False, help='Path to cache file')
-    parser.add_argument('--out-file', required=True, help='Path to output file')
-    parser.add_argument('--ijob', type=int, default=0, help='Job index')
-    parser.add_argument('--Njob', type=int, default=1, help='Total number of jobs')
-    parser.add_argument('--ext-extrapolate', required=False, action='store_true',
-                        help='Enable to extrapolate extinction calculation')
-    parser.add_argument('--err-extrapolate', required=False, action='store_true',
-                        help='Enable to extrapolate error calculation')
-    parser.add_argument('--ext-var', required=False, default='bminr', choices=('bminr', 'log_teff'),
-                        help='Variable to calculate extinction coefficient')
-    parser.add_argument('--batch-size', required=False, type=int, default=1000000,
-                        help='Batch size')
-    parser.add_argument('--skip-converting', action='store_true',
-                        help='Skip converting from ebf to hdf5')
-    return parser.parse_args()
+ALL_PIPELINES = OrderedDict([
+    ("ebf_to_hdf5", ananke.scripts.ebf_to_hdf5),
+    ("gmag_cut", ananke.scripts.gmag_cut),
+    ("rotate_coords", ananke.scripts.rotate_coords),
+    ("calc_props", ananke.scripts.calc_props),
+    ("selection_function", ananke.scripts.selection_function),
+])
 
 def set_logger():
     logger = logging.getLogger(__name__)
@@ -42,47 +30,57 @@ def set_logger():
     logger.addHandler(stream_handler)
     return logger
 
-if __name__ == '__main__':
-    """ Converting ebf file into multiple hdf5 files """
+def parse_cmd():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--pipeline', required=False, type=str,
+                        help='Pipeline to run')
+    parser.add_argument('--gal', required=True, type=str,
+                         help='Galaxy name of run')
+    parser.add_argument('--lsr', required=True, type=int,
+                        help='LSR number of run')
+    parser.add_argument('--rslice', required=True, type=int,
+                        help='Radial slice of run')
+    parser.add_argument('--ijob', type=int, default=0, help='Job index')
+    parser.add_argument('--Njob', type=int, default=1, help='Total number of jobs')
+    parser.add_argument('--ext-extrapolate', required=False, action='store_true',
+                        help='Enable to extrapolate for extinction calculation')
+    parser.add_argument('--err-extrapolate', required=False, action='store_true',
+                        help='Enable to extrapolate for error calculation')
+    parser.add_argument('--ext-var', required=False, default='bminr',
+                        choices=('bminr', 'logteff'),
+                        help='Variable to calculate extinction coefficient')
+    parser.add_argument('--which', type=str, default='both')
+    parser.add_argument('--batch-size', required=False, type=int, default=1000000,
+                        help='Batch size')
+    return parser.parse_args()
+
+if __name__ == "__main__":
+    """ Run all pipelines """
     FLAGS = parse_cmd()
+    LOGGER = set_logger()
 
-    logger = set_logger()
+    if FLAGS.pipeline is not None:
+        LOGGER.info("Running pipeline: {}".format(FLAGS.pipeline))
+        if FLAGS.pipeline not in ALL_PIPELINES:
+            raise KeyError("Pipeline {} does not exist".format(FLAGS.pipeline))
 
-    #logger.info('Create mock catalog with settings:')
-    #logger.info(f'Job: [{FLAGS.ijob} / {FLAGS.Njob}]')
-    #logger.info(f'Batch size: {FLAGS.batch_size}')
-    #logger.info(f'Mock file      : {FLAGS.mock_file}')
-    #logger.info(f'Extinction file: {FLAGS.ext_file}')
-    #logger.info(f'Output file    : {FLAGS.out_file}')
-    if FLAGS.cache_file is None:
-        temp_file = f'{FLAGS.out_file}.temp'
+        t0 = time.time()
+        ALL_PIPELINES[FLAGS.pipeline].main(FLAGS, LOGGER)
+        t1 = time.time()
+        total_dt = t1 - t0
     else:
-        temp_file = FLAGS.cache_file
+        LOGGER.info("Running all pipelines")
+        LOGGER.info("---------------------")
+        total_dt = 0
+        for pipeline in ALL_PIPELINES:
+            LOGGER.info("Running: {}".format(pipeline))
+            LOGGER.info("----------------------------------")
+            t0 = time.time()
+            ALL_PIPELINES[pipeline].main(FLAGS, LOGGER)
+            t1 = time.time()
+            total_dt += t1 - t0
+            LOGGER.info(f"Pipeline run time: {t1 - t0}")
 
-    # Convert ebf to HDF5
-    if not FLAGS.skip_converting:
-        cmd = 'python convert_ebf_to_hdf5.py'\
-            ' --mock-file {} --ext-file {} --out-file {} --ijob {} --Njob {} --batch-size {}'
-        cmd = cmd.format(FLAGS.mock_file, FLAGS.ext_file, temp_file,
-                         FLAGS.ijob, FLAGS.Njob, FLAGS.batch_size)
-        logger.info(f'Running {cmd}')
-        subprocess.check_call(cmd.split(' '))
-    else:
-        logger.info(f'Skip converting')
-
-    # Convert ebf to HDF5
-    cmd = 'python apply_gmag_cut.py --in-file {} --out-file {}'
-    cmd = cmd.format(temp_file, FLAGS.out_file)
-    logger.info(f'Running {cmd}')
-    subprocess.check_call(cmd.split(' '))
-
-    # Convert ebf to HDF5
-    cmd = 'python calculate_properties.py --in-file {} --ext-var {}'
-    if FLAGS.ext_extrapolate:
-        cmd += ' --ext-extrapolate'
-    if FLAGS.err_extrapolate:
-        cmd == ' --err-extrapolate'
-    cmd = cmd.format(FLAGS.out_file, FLAGS.ext_var)
-    logger.info(f'Running {cmd}')
-    subprocess.check_call(cmd.split(' '))
+    LOGGER.info(f"Total run time: {total_dt}")
+    LOGGER.info("Done!")
 

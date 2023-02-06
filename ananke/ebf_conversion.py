@@ -20,7 +20,7 @@ ALL_MOCK_KEYS = {
     'mact': 'mact',
     'mtip': 'mtip',
     'age': 'age',
-    'teff': 'teff',
+    'teff': 'logteff',  # teff column in EBF is actually logteff
     'grav': 'logg',
     'lum': 'lum',
     'feh': 'feh',
