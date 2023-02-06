@@ -12,7 +12,7 @@ def rv_uncertainties(grvs, teff):
         0.4 + 20 * exp(0.8 * (G_RVS - 12.75))
     """
     rv_error = np.where(
-        teff < 6500, 0.12 + 6.0 * np.exp(0.9*(grvs - 14.0)),
+        teff < 6750, 0.12 + 6.0 * np.exp(0.9*(grvs - 14.0)),
         0.4 + 20.0 * np.exp(0.8*(grvs - 12.75)))
 
     grvs_min = 8.0
@@ -32,9 +32,7 @@ def calc_uncertainties(
     g_mag_true = data['phot_g_mean_mag_true'][i_start: i_stop]
     rp_mag_true = data['phot_rp_mean_mag_true'][i_start: i_stop]
     rv = data['radial_velocity_true'][i_start:i_stop]
-    teff = data['teff'][i_start:i_stop]
-    # correction to Teff because data actually returns log10(Teff)
-    teff = 10**teff
+    teff = 10**data['logteff'][i_start:i_stop]
 
     # Calculate G_RVS from G and R and calculate RV error from G_RVS and Teff
     grvs_true = photometric_utils.gminr_to_grvsminr(

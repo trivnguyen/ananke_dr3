@@ -55,7 +55,7 @@ def app_to_ext(mag, band, a_0, X, ext_var, extrapolate=True):
     Returns:
     '''
     # Check which extinction law to use
-    if ext_var == 'log_teff':
+    if ext_var == 'logteff':
         X_min = 3500./5040.
         X_max = 10000./5040.
 
@@ -105,10 +105,10 @@ def calc_extinction(
         phot_mean_mag_int = abs_to_app(phot_mean_mag_abs, dmod)
 
         # Calculate extincted apparent magnitude
-        if ext_var == 'teff':
-            teff = data['teff'][i_start:i_stop]
+        if ext_var == 'logteff':
+            logteff = data['logteff'][i_start:i_stop]
             phot_mean_mag_true = app_to_ext(
-                phot_mean_mag_int, band, a_0, teff, ext_var, extrapolate=extrapolate)
+                phot_mean_mag_int, band, a_0, logteff, ext_var, extrapolate=extrapolate)
         elif ext_var == 'bminr':
             bp_mag_true = data['phot_bp_mean_mag_abs'][i_start: i_stop]
             rp_mag_true = data['phot_rp_mean_mag_abs'][i_start: i_stop]
@@ -122,8 +122,10 @@ def calc_extinction(
 
     # Store the extinction and true colors
     ext_data['a_g_val'] = ext_data['phot_g_mean_mag_true'] - ext_data['phot_g_mean_mag_int']
-    ext_data['e_bp_min_rp_val'] = (ext_data['phot_bp_mean_mag_true'] - ext_data['phot_bp_mean_mag_int']) - \
-                                  (ext_data['phot_rp_mean_mag_true'] - ext_data['phot_rp_mean_mag_int'])
+    ext_data['e_bp_min_rp_val'] = (
+        (ext_data['phot_bp_mean_mag_true'] - ext_data['phot_bp_mean_mag_int'])
+        - (ext_data['phot_rp_mean_mag_true'] - ext_data['phot_rp_mean_mag_int'])
+    )
     ext_data['bp_rp_true'] = ext_data['phot_bp_mean_mag_true'] - ext_data['phot_rp_mean_mag_true']
     ext_data['bp_g_true'] = ext_data['phot_bp_mean_mag_true'] - ext_data['phot_g_mean_mag_true']
     ext_data['g_rp_true'] = ext_data['phot_g_mean_mag_true'] - ext_data['phot_rp_mean_mag_true']
