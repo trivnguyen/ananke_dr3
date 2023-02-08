@@ -1,84 +1,66 @@
 
 ''' Script to write and submit jobs '''
 
-import os
-import sys
+import os, sys, stat
 import argparse
 
 # Read in command line arguments
 def parse_cmd():
     parser = argparse.ArgumentParser()
-    parser.add_argument('gal', type=str, help='galaxy name')
-    parser.add_argument('lsr', type=int, help='lsr number')
-    parser.add_argument('rslice', type=int, help='rslice number')
+    parser.add_argument('--gal', type=str, required=True, help='galaxy name')
+    parser.add_argument('--lsr', type=int, required=True, help='lsr number')
+    parser.add_argument('--rslice', type=int, required=True, help='rslice number')
+    parser.add_argument('--Njob', type=int, required=True, help='total number of jobs')
     parser.add_argument('-p', '--partition', type=str, default='skx-normal',
                         help='slurm partition')
     parser.add_argument('-A', '--accounting-group', type=str, default='TG-PHY210118',
                         help='accounting group')
-    parser.add_argument('-t1', '--time-catalog', dest='t1', type=str, default='5:00:00',
-                        help='time of catalog job')
-    parser.add_argument('-t2', '--time-sf', dest='t2', type=str, default='3:00:00',
-                        help='time of selection function job')
+    parser.add_argument('-t', '--time', type=str, default='5:00:00',
+                        help='wall time of job')
     return parser.parse_args()
 
 FLAGS = parse_cmd()
 gal = FLAGS.gal
 lsr = FLAGS.lsr
 rslice = FLAGS.rslice
+Njob = FLAGS.Njob
 partition = FLAGS.partition
-t1 = FLAGS.t1
-t2 = FLAGS.t2
+t = FLAGS.time
 account = FLAGS.accounting_group
-name = f"{gal}-lsr-{lsr}-rslice-{rslice}"
 
 print(f'Galaxy, LSR, rslice: {gal}, {lsr}, {rslice}')
 
-# Define input and output paths
-base_dir = f"/scratch/05328/tg846280/FIRE_Public_Simulations/ananke_dr3/"
-ebf_dir = os.path.join(base_dir, f"{gal}_ebf/lsr-{lsr}")
-sf_data_dir = os.path.join(base_dir, "selectionfunction_data")
-
+# Create submit directory based on galaxy, lsr, and rslice
 submit_dir = f"slurm_submit/{gal}-lsr-{lsr}-rslice-{rslice}"
 os.makedirs(submit_dir, exist_ok=True)
 
-### Write batch script for make catalog job
-# path to mock catalog and extinction file
-ext_file = os.path.join(
-    ebf_dir, f"lsr-{lsr}-rslice-{rslice}.{gal}-res7100-md-sliced.ext.ebf")
-mock_file = os.path.join(
-    ebf_dir, f"lsr-{lsr}-rslice-{rslice}.{gal}-res7100-md-sliced.ebf")
-
-# path to cache and output
-out_file = os.path.join(
-    base_dir, f"{gal}/lsr-{lsr}/preSF",
-    f"lsr-{lsr}-rslice-{rslice}.{gal}-res7100-md-sliced-gcat-dr3.hdf5"
-)
-cache_file = os.path.join(
-    base_dir, f"{gal}/lsr-{lsr}/preSF/cache",
-    f"lsr-{lsr}-rslice-{rslice}.{gal}-res7100-md-sliced-gcat-dr3.hdf5.temp"
-)
-
-# Command
+# Submit command
 run_cmd = "srun -n1 -N1 python make_catalog.py "\
-    f"--out-file {out_file} --mock-file {mock_file} --ext-file {ext_file} "\
-    f"--cache-file {cache_file} --ext-var bminr --ext-extrapolate "\
-    "--err-extrapolate --ijob 0 --Njob 1"
+    f"--gal {gal} --lsr {lsr} --rslice {rslice} "\
+    "--err-extrapolate --ijob {} --Njob {}"
 
-# Create sbatch file to submit make_catalog
-sbatch_fn = os.path.join(submit_dir, "make_catalog.sh")
-with open(sbatch_fn, 'w') as f:
-    f.write('#!/bin/bash\n')
-    f.write('#SBATCH -p {}\n'.format(partition))
-    f.write('#SBATCH -A {}\n'.format(account))
-    f.write('#SBATCH --job-name {}\n'.format(name))
-    f.write('#SBATCH --time {}\n'.format(t1))
-    f.write('#SBATCH -o make_catalog.out\n')
-    f.write('#SBATCH -e make_catalog.err\n')
-    f.write('#SBATCH --nodes=1\n')
-    f.write('#SBATCH --ntasks=1\n')
-    f.write('mkdir -p {}\n'.format(os.path.dirname(cache_file)))
-    f.write('mkdir -p {}\n'.format(os.path.dirname(out_file)))
-    f.write('cd {}\n'.format(os.getcwd()))
-    f.write(run_cmd + '\n')
-    f.write('exit 0\n')
+all_batch_fn = []
+for ijob in range(Njob):
+    sbatch_fn = os.path.join(submit_dir, f"submit.{ijob}.sh")
+    name = f"{gal}-lsr-{lsr}-rslice-{rslice}-{ijob}-{Njob}"
+    run_cmd_ijob = run_cmd.format(ijob, Njob)
+    with open(sbatch_fn, 'w') as f:
+        f.write('#!/bin/bash\n')
+        f.write('#SBATCH -p {}\n'.format(partition))
+        f.write('#SBATCH -A {}\n'.format(account))
+        f.write('#SBATCH --job-name {}\n'.format(name))
+        f.write('#SBATCH --time {}\n'.format(t))
+        f.write('#SBATCH -o out.{}.out\n'.format(ijob))
+        f.write('#SBATCH -e err.{}.err\n'.format(ijob))
+        f.write('#SBATCH --nodes=1\n')
+        f.write('#SBATCH --ntasks=1\n')
+        f.write('cd {}\n'.format(os.getcwd()))
+        f.write(run_cmd_ijob + '\n')
+        f.write('exit 0\n')
+
+submit_all = os.path.join(submit_dir, f"submit_all.sh")
+with open(submit_all, "w") as f:
+    for ijob in range(Njob):
+        f.write(f"sbatch submit.{ijob}.sh\n")
+os.chmod(submit_all, stat.S_IRWXU)
 
