@@ -16,10 +16,11 @@ def parse_cmd():
                         help='LSR number of run')
     parser.add_argument('--rslice', required=True, type=int,
                         help='Radial slice of run')
-    parser.add_argument('--ijob', type=int, default=0, help='Job index')
-    parser.add_argument('--Njob', type=int, default=1, help='Total number of jobs')
-    parser.add_argument('--batch-size', required=False, type=int, default=1000000,
-                        help='Batch size')
+    # DEPRECATED: batching with EBF is too unreliable
+    # parser.add_argument('--ijob', type=int, default=0, help='Job index')
+    # parser.add_argument('--Njob', type=int, default=1, help='Total number of jobs')
+    # parser.add_argument('--batch-size', required=False, type=int, default=1000000,
+                        # help='Batch size')
     return parser.parse_args()
 
 def set_logger():
@@ -50,7 +51,7 @@ def main(FLAGS, LOGGER=None):
         f"lsr-{lsr}-rslice-{rslice}.{gal}-res7100-md-sliced.ext.ebf")
     hdf5_path = os.path.join(
         envs.HDF5_BASEDIR, f"{gal}/lsr-{lsr}",
-        f"lsr-{lsr}-rslice-{rslice}.{gal}-res7100-md-sliced-gcat-dr3.{FLAGS.ijob}.hdf5")
+        f"lsr-{lsr}-rslice-{rslice}.{gal}-res7100-md-sliced-gcat-dr3.hdf5")
 
     # create output directory if not already exists
     os.makedirs(os.path.dirname(hdf5_path), exist_ok=True)
@@ -68,20 +69,19 @@ def main(FLAGS, LOGGER=None):
 
     # NOTE: there was an issue with the EBF file if i=0 and N=1
     # so this has to be called as a special case and not using ebf_to_hdf5_split
-    if FLAGS.ijob == 0 and FLAGS.Njob == 1:
-        io.ebf_to_hdf5(
-            ebf_path, hdf5_path, ebf_conversion.ALL_MOCK_KEYS,
-            FLAGS.batch_size)
-        io.ebf_to_hdf5(
-            ebf_ext_path, hdf5_path, ebf_conversion.ALL_EXT_KEYS,
-            FLAGS.batch_size)
-    else:
-        io.ebf_to_hdf5_split(
-            ebf_path, hdf5_path, ebf_conversion.ALL_MOCK_KEYS,
-            FLAGS.ijob, FLAGS.Njob, FLAGS.batch_size)
-        io.ebf_to_hdf5_split(
-            ebf_ext_path, hdf5_path, ebf_conversion.ALL_EXT_KEYS,
-            FLAGS.ijob, FLAGS.Njob, FLAGS.batch_size)
+    io.ebf_to_hdf5(
+        ebf_path, hdf5_path, ebf_conversion.ALL_MOCK_KEYS,
+        FLAGS.batch_size)
+    io.ebf_to_hdf5(
+        ebf_ext_path, hdf5_path, ebf_conversion.ALL_EXT_KEYS,
+        FLAGS.batch_size)
+    # else:
+    #     io.ebf_to_hdf5_split(
+    #         ebf_path, hdf5_path, ebf_conversion.ALL_MOCK_KEYS,
+    #         FLAGS.ijob, FLAGS.Njob, FLAGS.batch_size)
+    #     io.ebf_to_hdf5_split(
+    #         ebf_ext_path, hdf5_path, ebf_conversion.ALL_EXT_KEYS,
+    #         FLAGS.ijob, FLAGS.Njob, FLAGS.batch_size)
 
 if __name__ == "__main__":
     FLAGS = parse_cmd()
