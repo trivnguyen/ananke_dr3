@@ -8,6 +8,7 @@ import time
 from collections import OrderedDict
 
 import ananke.scripts.ebf_to_hdf5
+import ananke.scripts.split_hdf5
 import ananke.scripts.gmag_cut
 import ananke.scripts.rotate_coords
 import ananke.scripts.calc_props
@@ -15,6 +16,7 @@ import ananke.scripts.selection_function
 
 ALL_PIPELINES = OrderedDict([
     ("ebf_to_hdf5", ananke.scripts.ebf_to_hdf5),
+    ("split_hdf5", ananke.scripts.split_hdf5),
     ("gmag_cut", ananke.scripts.gmag_cut),
     ("rotate_coords", ananke.scripts.rotate_coords),
     ("calc_props", ananke.scripts.calc_props),
@@ -50,7 +52,7 @@ def parse_cmd():
                         choices=('bminr', 'logteff'),
                         help='Variable to calculate extinction coefficient')
     parser.add_argument('--which', type=str, default='both')
-    parser.add_argument('--batch-size', required=False, type=int, default=1000000,
+    parser.add_argument('--batch-size', required=False, type=int, default=10000000,
                         help='Batch size')
     return parser.parse_args()
 
@@ -73,6 +75,9 @@ if __name__ == "__main__":
         LOGGER.info("---------------------")
         total_dt = 0
         for pipeline in ALL_PIPELINES:
+            # skipping this because EBF is unreliable and cannot be parallelized
+            if pipeline == "ebf_to_hdf5":
+                continue
             LOGGER.info("Running: {}".format(pipeline))
             LOGGER.info("----------------------------------")
             t0 = time.time()
