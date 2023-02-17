@@ -5,6 +5,7 @@ import sys
 import h5py
 import argparse
 import logging
+import time
 
 from .. import envs
 
@@ -46,6 +47,14 @@ def main(FLAGS, LOGGER=None):
             f_out.create_dataset(key, data=f_in[key][start: stop])
     f_out.close()
 
-if __name == "__main__":
+if __name__ == "__main__":
     FLAGS = parse_cmd()
-    main(FLAGS)
+    LOGGER = set_logger()
+
+    # run main and keep track of time
+    t0 = time.time()
+    main(FLAGS, LOGGER)
+    t1 = time.time()
+
+    LOGGER.info(f"Total run time: {t1 - t0}")
+    LOGGER.info("Done!")

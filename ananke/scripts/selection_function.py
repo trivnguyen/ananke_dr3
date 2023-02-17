@@ -5,6 +5,7 @@ import sys
 import h5py
 import argparse
 import logging
+import time
 
 import numpy as np
 
@@ -61,6 +62,7 @@ def main(FLAGS, LOGGER=None):
             with h5py.File(out_path, 'w') as out_f:
                 # copying headers
                 out_f.attrs.update(dict(in_f.attrs))
+                out_f.attrs.update(dict(num_select_general=select.sum()))
                 # copying all keys and apply selection function
                 for key in in_f:
                     LOGGER.info(f"Copying key: {key}")
@@ -74,6 +76,7 @@ def main(FLAGS, LOGGER=None):
             select = selection.calc_rvs_select(out_f)
             LOGGER.info("Number of RVS stars selected: {} / {}".format(
                 select.sum(), len(select)))
+            out_f.attrs.update(dict(num_select_rv=select.sum()))
 
             rv  = out_f['radial_velocity'][:]
             rv_error = out_f['radial_velocity_error'][:]
@@ -90,4 +93,16 @@ def main(FLAGS, LOGGER=None):
             out_f.create_dataset("radial_velocity_error", data=rv_error)
             out_f.create_dataset("radial_velocity_error_corr_factor",
                                  data=rv_error_corr)
+
+if __name__ == "__main__":
+    FLAGS = parse_cmd()
+    LOGGER = set_logger()
+
+    # run main and keep track of time
+    t0 = time.time()
+    main(FLAGS, LOGGER)
+    t1 = time.time()
+
+    LOGGER.info(f"Total run time: {t1 - t0}")
+    LOGGER.info("Done!")
 

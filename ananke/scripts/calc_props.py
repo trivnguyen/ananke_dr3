@@ -5,6 +5,7 @@ import sys
 import h5py
 import argparse
 import logging
+import time
 
 from .. import coordinates, errors, extinction, io, flags, envs
 
@@ -96,4 +97,16 @@ def main(FLAGS, LOGGER=None):
                 ext_extrapolate=FLAGS.ext_extrapolate,
                 err_extrapolate=FLAGS.err_extrapolate)
             io.append_dataset_dict(f, data, overwrite=False)
+
+if __name__ == "__main__":
+    FLAGS = parse_cmd()
+    LOGGER = set_logger()
+
+    # run main and keep track of time
+    t0 = time.time()
+    main(FLAGS, LOGGER)
+    t1 = time.time()
+
+    LOGGER.info(f"Total run time: {t1 - t0}")
+    LOGGER.info("Done!")
 

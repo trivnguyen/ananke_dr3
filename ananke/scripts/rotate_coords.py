@@ -5,6 +5,7 @@ import sys
 import h5py
 import argparse
 import logging
+import time
 
 import numpy as np
 import astropy
@@ -118,4 +119,16 @@ def main(FLAGS, LOGGER=None):
             new_data = calc_new_coords(f, lsr, indices=indices)
             for key in new_data:
                 f[key][i_start: i_stop] = new_data[key]
+
+if __name__ == "__main__":
+    FLAGS = parse_cmd()
+    LOGGER = set_logger()
+
+    # run main and keep track of time
+    t0 = time.time()
+    main(FLAGS, LOGGER)
+    t1 = time.time()
+
+    LOGGER.info(f"Total run time: {t1 - t0}")
+    LOGGER.info("Done!")
 
