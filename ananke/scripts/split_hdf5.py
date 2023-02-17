@@ -32,15 +32,15 @@ def main(FLAGS, LOGGER=None):
         LOGGER = set_logger()
 
     in_path = os.path.join(
-        envs.HDF5_BASEDIR,, f"{gal}/lsr-{lsr}/",
+        envs.HDF5_BASEDIR, f"{gal}/lsr-{lsr}/",
         f"lsr-{lsr}-rslice-{rslice}.{gal}-res7100-md-sliced-gcat-dr3.hdf5")
     out_path = os.path.join(
-        envs.HDF5_BASEDIR,, f"{gal}/lsr-{lsr}/",
+        envs.HDF5_BASEDIR, f"{gal}/lsr-{lsr}/",
         f"lsr-{lsr}-rslice-{rslice}.{gal}-res7100-md-sliced-gcat-dr3.{ijob}.hdf5")
 
     f_out = h5py.File(out_path, 'w')
     with h5py.File(in_path, 'r') as f_in:
-        num_samples = len(f_in['dmod'])
+        num_samples = len(f_in['dmod_true'])
         start = int(num_samples / Njob * ijob)
         stop = int(num_samples / Njob * (ijob + 1))
         for key in f_in.keys():

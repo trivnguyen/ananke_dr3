@@ -60,7 +60,6 @@ def main(FLAGS, LOGGER=None):
     LOGGER.info(f"EBF path     : {ebf_path}")
     LOGGER.info(f"EBF ext path : {ebf_ext_path}")
     LOGGER.info(f"HDF5 path    : {hdf5_path}")
-    LOGGER.info(f"Batch size   : {FLAGS.batch_size}")
 
     # overwrite HDF5 file if exist
     if os.path.exists(hdf5_path):
@@ -70,11 +69,9 @@ def main(FLAGS, LOGGER=None):
     # NOTE: there was an issue with the EBF file if i=0 and N=1
     # so this has to be called as a special case and not using ebf_to_hdf5_split
     io.ebf_to_hdf5(
-        ebf_path, hdf5_path, ebf_conversion.ALL_MOCK_KEYS,
-        FLAGS.batch_size)
+        ebf_path, hdf5_path, ebf_conversion.ALL_MOCK_KEYS)
     io.ebf_to_hdf5(
-        ebf_ext_path, hdf5_path, ebf_conversion.ALL_EXT_KEYS,
-        FLAGS.batch_size)
+        ebf_ext_path, hdf5_path, ebf_conversion.ALL_EXT_KEYS)
     # else:
     #     io.ebf_to_hdf5_split(
     #         ebf_path, hdf5_path, ebf_conversion.ALL_MOCK_KEYS,
