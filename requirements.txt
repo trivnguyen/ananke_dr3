@@ -1,6 +1,7 @@
 numpy
 astropy
 scipy
+pandas
 h5py
 pygaia
 tqdm
