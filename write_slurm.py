@@ -15,7 +15,7 @@ def parse_cmd():
                         help='slurm partition')
     parser.add_argument('-A', '--accounting-group', type=str, default='TG-PHY210118',
                         help='accounting group')
-    parser.add_argument('-t', '--time', type=str, default='5:00:00',
+    parser.add_argument('-t', '--time', type=str, default='00:30:00',
                         help='wall time of job')
     return parser.parse_args()
 
