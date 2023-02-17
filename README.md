@@ -22,7 +22,7 @@ where `GALAXY` is the name of the galaxy (i.e. `m12i`, `m12f` or `m12m`), `LSR`
 is the index of the Local Standard of Rest in DR2, and `RSLICE` is the number of radial slices (rslice).
 For example, if you want to convert m12f, lsr 1, and rslice 8, into HDF5, simply run:
 ```
-python make_catalog.py --gal m12f --lsr 1 --rslice 8
+$ python make_catalog.py --gal m12f --lsr 1 --rslice 8
 ```
 
 For smaller rslices (e.g. m12i, lsr 0, rslice 0), the run time is about 1-2 hours.
@@ -44,9 +44,9 @@ we provide `write_slurm.py` to write job submission for SLURM.
 
 To submit a SLURM script for a given galaxy, lsr, and rslice, simply run:
 ```
-python write_slurm.py --gal GAL --lsr LSR --rslice RSLICE --Njob NJOB --time TIME
-cd slurm_submit/GAL-lsr-LSR-rslice-RSLICE
-./submit_all.submit
+$ python write_slurm.py --gal GAL --lsr LSR --rslice RSLICE --Njob NJOB --time TIME
+$ cd slurm_submit/GAL-lsr-LSR-rslice-RSLICE
+$ ./submit_all.submit
 ```
 This will submit NJOB jobs. TIME is the alloc time for **each job**,
 **NOT** the total wall time of all jobs.
