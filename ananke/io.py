@@ -11,6 +11,36 @@ try:
 except ImportError:
     LOGGER.warn('Cannot import ebf')
 
+
+def get_rslice_path(gal, lsr, rslice, ijob=None, basedir=None):
+    ''' Get the path of an rslice '''
+    path = os.path.join(basedir, f'{gal}/lsr-{lsr}')
+    if ijob is not None:
+        path = os.path.join(
+            path,
+            f'lsr-{lsr}-rslice-{rslice}.{gal}-res7100-md-sliced-gcat-dr3.{ijob}.hdf5'
+        )
+    else:
+        path = os.path.join(
+            path,
+            f'lsr-{lsr}-rslice-{rslice}.{gal}-res7100-md-sliced-gcat-dr3.hdf5'
+        )
+    if not os.path.exists(path):
+        raise FileNotFoundError(f'{path} does not exist.')
+    return path
+
+def read_rslice(keys, gal, lsr, rslice, basedir, ijobs=[0, ]):
+    ''' Iterate through all indices of an rslice and read data into dict '''
+    data = {k: [] for k in keys}
+    for i in ijobs:
+        path = get_rslice_path(gal, lsr, rslice, i, basedir=basedir)
+        with h5py.File(path, 'r') as f:
+            for k in keys:
+                data[k].append(f[k][:])
+    for k in keys:
+        data[k] = np.concatenate(data[k])
+    return data
+
 def append_dataset(fobj, key, data, overwrite=False):
     ''' Append an hdf5 dataset '''
     if fobj.get(key) is None:

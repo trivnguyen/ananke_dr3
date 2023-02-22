@@ -87,6 +87,8 @@ def calc_new_coords(data, lsr, indices=(None, None)):
     new_data['vy_true'] = vy_rot
     new_data['ra_true'] = icrs.ra.to_value(u.deg)
     new_data['dec_true'] = icrs.dec.to_value(u.deg)
+    new_data['l_true'] = gc.spherical.lon.to_value(u.deg)
+    new_data['b_true'] = gc.spherical.lat.to_value(u.deg)
 
     return new_data
 
