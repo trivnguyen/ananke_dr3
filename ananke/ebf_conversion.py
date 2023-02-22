@@ -20,7 +20,7 @@ ALL_MOCK_KEYS = {
     'mact': 'mact',
     'mtip': 'mtip',
     'age': 'age',
-    'teff': 'teff',
+    'teff': 'logteff',  # teff column in EBF is actually logteff
     'grav': 'logg',
     'lum': 'lum',
     'feh': 'feh',
@@ -40,15 +40,5 @@ ALL_EXT_KEYS = {
     'lognh': 'lognh',
     'a0': 'A0',
     'ebv': 'ebv',
-    # 'a_g_val': 'a_g_val',
-    # 'a_g_bp_val': 'a_bp_val',
-    # 'a_g_rp_val': 'a_rp_val',
-    # 'bp_g_true': 'bp_g_true',
-    # 'bp_g_int': 'bp_g_int',
-    # 'bp_rp_true': 'bp_rp_true',
-    # 'bp_rp_int': 'bp_rp_int',
-    # 'g_rp_true': 'g_rp_true',
-    # 'g_rp_int': 'g_rp_int',
-    # 'e_bp_min_rp_val': 'e_bp_min_rp_val',
 }
 

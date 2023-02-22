@@ -1,4 +1,5 @@
 
+import numpy as np
 import astropy.coordinates as coord
 import astropy.units as u
 
@@ -57,6 +58,26 @@ def cat_to_gal(data, postfix='', indices=(None, None)):
     coord_data[f'radial_velocity{postfix}'] = gc.sphericalcoslat.differentials['s'].d_distance.to_value(u.km/u.s)
 
     return coord_data
+
+def rotate_coords_ananke(x, lsr):
+    """ Rotate coordinate based on LSR """
+    # rotation depends on which LSR
+    pos_lsr = {
+        0: (0.0, 8.2, 0.0),
+        1: (-7.1014, -4.1, 0.0),
+        2: (7.1014, -4.1, 0.0)
+    }
+
+    # rotate coordinate
+    phi = np.pi + np.arctan2(pos_lsr[lsr][1], pos_lsr[lsr][0])
+    rot = np.array([
+        [np.cos(phi), np.sin(phi), 0.0],
+        [-np.sin(phi), np.cos(phi), 0.0],
+        [0.0, 0.0, 1.0]
+    ])
+    x_rot = np.dot(x, rot.T)
+    return x_rot
+
 
 def calc_coords(data, indices=(None, None)):
     """ Calculate all missing coordinates """
