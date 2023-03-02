@@ -41,6 +41,22 @@ def read_rslice(keys, gal, lsr, rslice, basedir, ijobs=[0, ]):
         data[k] = np.concatenate(data[k])
     return data
 
+def read_rslice(keys, gal, lsr, rslice, basedir):
+    """ Iterate through all indices of an rslice and read data into a dictionary """
+    data = {k: [] for k in keys}
+    for i in range(10):
+        path = os.path.join(
+            "/scratch/projects/xsede/GalaxiesOnFIRE/ananke/", f"{gal}/lsr-{lsr}/",
+            f"lsr-{lsr}-rslice-{rslice}.{gal}-res7100-md-sliced-gcat-dr3.{i}.hdf5"
+        )
+        with h5py.File(path, 'r') as f:
+            for k in keys:
+                data[k].append(f[k][:])
+    for k in keys:
+        data[k] = np.concatenate(data[k])
+    return data
+
+
 def append_dataset(fobj, key, data, overwrite=False):
     ''' Append an hdf5 dataset '''
     if fobj.get(key) is None:
@@ -71,19 +87,22 @@ def ebf_to_hdf5(infile, outfile, keys):
     '''
     # # ebf_to_hdf5_split(infile, outfile, keys, 0, 1, batch_size)
     # # Get the total length
-    # if isinstance(keys, dict):
-    #     test_key = list(keys.keys())[0]
-    # else:
-    #     test_key = keys[0]
-    # num_samples = ebf.getHeader(infile, f'/{test_key}').dim[0]
-    # print(num_samples)
+    if isinstance(keys, dict):
+        test_key = list(keys.keys())[0]
+    else:
+        test_key = keys[0]
+    num_samples = ebf.getHeader(infile, f'/{test_key}').dim[0]
+    print(num_samples)
     for key in keys:
         print(key)
         if isinstance(keys, dict):
             new_key = keys[key]
         else:
             new_key = key
-        data = ebf.read(infile, f'/{key}')
+        try:
+            data = ebf.read(infile, f'/{key}')
+        except:
+            data = np.zeros(num_samples)
         with h5py.File(outfile, 'a') as f:
             try:
                 append_dataset(f, new_key, data)
