@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 
 import argparse
+import os
 import time
 from collections import OrderedDict
 
-import ebf_to_hdf5
-import split_hdf5
-import gmag_cut
-import rotate_coords
-import calc_props
-import selection_function
-
 from ananke.logger import logger
+from bin import ebf_to_hdf5
+from bin import gmag_cut
+from bin import split_hdf5
+from bin import rotate_coords
+from bin import calc_props
+from bin import selection_function
+
 
 ALL_PIPELINES = OrderedDict([
     ("ebf_to_hdf5", ebf_to_hdf5),
