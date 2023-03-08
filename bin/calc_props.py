@@ -5,7 +5,7 @@ import h5py
 import os
 import time
 
-from ananke import coordinates, errors, extinction, io, flags, config
+from ananke import coordinates, errors, extinction, io, config
 from ananke.logger import logger
 
 def parse_cmd():
