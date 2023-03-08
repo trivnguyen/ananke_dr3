@@ -4,7 +4,7 @@ import scipy.interpolate as interpolate
 import pandas as pd
 
 _NOBS = {'G': 200, 'RP': 20, 'BP': 20}
-_SPLINE_CSV = "ananke/data/LogErrVsMagSpline.csv"
+_SPLINE_CSV = "LogErrVsMagSpline.csv"
 
 def init_spline(spline_csv, band):
     """ Initialize spline function from CSV table
