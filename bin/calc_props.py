@@ -79,7 +79,6 @@ def main(FLAGS):
             data['g_rp'] = data['phot_g_mean_mag'] - data['phot_rp_mean_mag']
             io.append_dataset_dict(f, data, overwrite=False)
 
-
 if __name__ == "__main__":
     FLAGS = parse_cmd()
 
