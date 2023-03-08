@@ -12,7 +12,7 @@ authors = ["Tri Nguyen <tnguy@mit.edu>", "Xiaowei Ou <xwou@mit.edu>"]
 file = "LICENSE.md"
 
 [tool.poetry.readme]
-file = "README.rst"
+file = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.9"

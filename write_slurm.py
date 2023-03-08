@@ -35,7 +35,7 @@ submit_dir = f"slurm_submit/{gal}-lsr-{lsr}-rslice-{rslice}"
 os.makedirs(submit_dir, exist_ok=True)
 
 # Submit command
-run_cmd = "srun -n1 -N1 python make_catalog.py "\
+run_cmd = "srun -n1 -N1 ananke-make-catalog "\
     f"--gal {gal} --lsr {lsr} --rslice {rslice} "\
     "--err-extrapolate --ijob {} --Njob {}"
 
