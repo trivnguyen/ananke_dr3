@@ -7,11 +7,12 @@ name = "ananke"
 version = "1.0.0"
 description = "Converting Latte mock catalog into the Ananke DR3 synthetic surveys"
 authors = ["Tri Nguyen <tnguy@mit.edu>", "Xiaowei Ou <xwou@mit.edu>"]
-license = "MIT"
-readme = "README.md"
 
 [tool.poetry.license]
 file = "LICENSE"
+
+[tool.poetry.readme]
+file = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.9"
