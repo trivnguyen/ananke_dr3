@@ -7,7 +7,7 @@ import argparse
 import logging
 import time
 
-from .. import extinction, io, envs
+from ananke import extinction, io, envs
 
 FLAGS = None
 

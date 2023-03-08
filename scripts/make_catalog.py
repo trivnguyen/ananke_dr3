@@ -1,36 +1,26 @@
 #!/usr/bin/env python
 
-import os
-import sys
 import argparse
-import logging
 import time
 from collections import OrderedDict
 
-import ananke.scripts.ebf_to_hdf5
-import ananke.scripts.split_hdf5
-import ananke.scripts.gmag_cut
-import ananke.scripts.rotate_coords
-import ananke.scripts.calc_props
-import ananke.scripts.selection_function
+import ebf_to_hdf5
+import split_hdf5
+import gmag_cut
+import rotate_coords
+import calc_props
+import selection_function
+
+from ananke.logger import logger
 
 ALL_PIPELINES = OrderedDict([
-    ("ebf_to_hdf5", ananke.scripts.ebf_to_hdf5),
-    ("split_hdf5", ananke.scripts.split_hdf5),
-    ("gmag_cut", ananke.scripts.gmag_cut),
-    ("rotate_coords", ananke.scripts.rotate_coords),
-    ("calc_props", ananke.scripts.calc_props),
-    ("selection_function", ananke.scripts.selection_function),
+    ("ebf_to_hdf5", ebf_to_hdf5),
+    ("split_hdf5", split_hdf5),
+    ("gmag_cut", gmag_cut),
+    ("rotate_coords", rotate_coords),
+    ("calc_props", calc_props),
+    ("selection_function", selection_function),
 ])
-
-def set_logger():
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    stream_handler = logging.StreamHandler(sys.stdout)
-    stream_handler.setFormatter(formatter)
-    logger.addHandler(stream_handler)
-    return logger
 
 def parse_cmd():
     parser = argparse.ArgumentParser()
@@ -59,33 +49,31 @@ def parse_cmd():
 if __name__ == "__main__":
     """ Run all pipelines """
     FLAGS = parse_cmd()
-    LOGGER = set_logger()
 
     if FLAGS.pipeline is not None:
-        LOGGER.info("Running pipeline: {}".format(FLAGS.pipeline))
+        logger.info("Running pipeline: {}".format(FLAGS.pipeline))
         if FLAGS.pipeline not in ALL_PIPELINES:
             raise KeyError("Pipeline {} does not exist".format(FLAGS.pipeline))
 
         t0 = time.time()
-        ALL_PIPELINES[FLAGS.pipeline].main(FLAGS, LOGGER)
+        ALL_PIPELINES[FLAGS.pipeline].main(FLAGS)
         t1 = time.time()
         total_dt = t1 - t0
     else:
-        LOGGER.info("Running all pipelines")
-        LOGGER.info("---------------------")
+        logger.info("Running all pipelines")
+        logger.info("---------------------")
         total_dt = 0
         for pipeline in ALL_PIPELINES:
             # skipping this because EBF is unreliable and cannot be parallelized
             if pipeline == "ebf_to_hdf5":
                 continue
-            LOGGER.info("Running: {}".format(pipeline))
-            LOGGER.info("----------------------------------")
+            logger.info("Running: {}".format(pipeline))
+            logger.info("----------------------------------")
             t0 = time.time()
-            ALL_PIPELINES[pipeline].main(FLAGS, LOGGER)
+            ALL_PIPELINES[pipeline].main(FLAGS, logger)
             t1 = time.time()
             total_dt += t1 - t0
-            LOGGER.info(f"Pipeline run time: {t1 - t0}")
+            logger.info(f"Pipeline run time: {t1 - t0}")
 
-    LOGGER.info(f"Total run time: {total_dt}")
-    LOGGER.info("Done!")
-
+    logger.info(f"Total run time: {total_dt}")
+    logger.info("Done!")

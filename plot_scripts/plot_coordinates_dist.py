@@ -14,16 +14,11 @@ import matplotlib.pyplot as plt
 
 plt.style.use('/scratch/05328/tg846280/FIRE_Public_Simulations/matplotlib_style/ananke.mplstyle')
 
-from ananke import io, envs
 import utils
+from ananke import io, config
+from ananke.logger import logger
 
 FLAGS = None
-LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel(logging.DEBUG)
-stream_handler = logging.StreamHandler(sys.stdout)
-stream_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-LOGGER.addHandler(stream_handler)
-
 def parse_cmd():
     parser = argparse.ArgumentParser()
     parser.add_argument('--gal', required=True, type=str)
@@ -48,19 +43,19 @@ def main(FLAGS):
     os.makedirs(plot_dir, exist_ok=True)
 
     if use_true:
-        LOGGER.info('Use true values')
+        logger.info('Use true values')
         keys = (
             'px_true', 'py_true', 'pz_true', 'vx_true', 'vy_true', 'vz_true'
         )
     else:
-        LOGGER.info('Use error-convolved values')
+        logger.info('Use error-convolved values')
         keys = (
             'l', 'b', 'parallax', 'pml', 'pmb', 'radial_velocity'
         )
 
     # read in data
     data = io.read_rslice(keys, gal, lsr, rslice,
-        basedir=envs.DR3_BASEDIR, ijobs=range(Njob))
+        basedir=config.DR3_BASEDIR, ijobs=range(Njob))
 
     if use_true:
         px = data['px_true']
@@ -75,7 +70,7 @@ def main(FLAGS):
         select = (~np.isnan(data['radial_velocity']))
         data = {k: data[k][select] for k in data}
 
-        LOGGER.info('Convert l, b, parallax, proper motions, and RV to Cartesian')
+        logger.info('Convert l, b, parallax, proper motions, and RV to Cartesian')
         galactic = coord.Galactic(
             l=data['l'] * u.deg, b=data['b'] * u.deg,
             distance=coord.Distance(parallax=data['parallax'] * u.mas),
@@ -139,7 +134,6 @@ if __name__ == "__main__":
     t0 = time.time()
     main(FLAGS)
     t1 = time.time()
-
-    LOGGER.info(f"Total run time: {t1 - t0}")
-    LOGGER.info("Done!")
+    logger.info(f"Total run time: {t1 - t0}")
+    logger.info("Done!")
 

@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 plt.style.use('/scratch/05328/tg846280/FIRE_Public_Simulations/matplotlib_style/ananke.mplstyle')
 
-from ananke import io, envs
+from ananke import io, config
 import utils
 
 FLAGS = None
@@ -63,7 +63,7 @@ def main(FLAGS):
 
     # Read in data
     data = io.read_rslice(keys, gal, lsr, rslice,
-        basedir=envs.DR3_BASEDIR, ijobs=range(Njob))
+        basedir=config.DR3_BASEDIR, ijobs=range(Njob))
 
     # Select only data with POE > 10 and with radial velocity
     select = (
