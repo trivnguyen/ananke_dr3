@@ -9,10 +9,10 @@ description = "Converting Latte mock catalog into the Ananke DR3 synthetic surve
 authors = ["Tri Nguyen <tnguy@mit.edu>", "Xiaowei Ou <xwou@mit.edu>"]
 
 [tool.poetry.license]
-file = "LICENSE"
+file = "LICENSE.md"
 
 [tool.poetry.readme]
-file = "README.md"
+file = "README.rst"
 
 [tool.poetry.dependencies]
 python = "^3.9"

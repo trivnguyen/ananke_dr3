@@ -6,12 +6,12 @@ import time
 from collections import OrderedDict
 
 from ananke.logger import logger
-from bin import ebf_to_hdf5
-from bin import gmag_cut
-from bin import split_hdf5
-from bin import rotate_coords
-from bin import calc_props
-from bin import selection_function
+from ananke.bin import ebf_to_hdf5
+from ananke.bin import gmag_cut
+from ananke.bin import split_hdf5
+from ananke.bin import rotate_coords
+from ananke.bin import calc_props
+from ananke.bin import selection_function
 
 
 ALL_PIPELINES = OrderedDict([
@@ -47,7 +47,7 @@ def parse_cmd():
                         help='Batch size')
     return parser.parse_args()
 
-if __name__ == "__main__":
+def main():
     """ Run all pipelines """
     FLAGS = parse_cmd()
 
@@ -78,3 +78,6 @@ if __name__ == "__main__":
 
     logger.info(f"Total run time: {total_dt}")
     logger.info("Done!")
+
+if __name__ == "__main__":
+    main()

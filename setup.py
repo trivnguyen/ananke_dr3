@@ -1,5 +1,6 @@
+
+import shutil
 from setuptools import setup
 
-setup(
-    scripts=['bin/make_ananke_catalog.py'],
-)
+shutil.copy("config.ini", "src/ananke/config.ini")
+setup()

@@ -1,10 +1,12 @@
 
+import os
+
 import numpy as np
-import scipy.interpolate as interpolate
 import pandas as pd
+import scipy.interpolate as interpolate
 
 _NOBS = {'G': 200, 'RP': 20, 'BP': 20}
-_SPLINE_CSV = "LogErrVsMagSpline.csv"
+_SPLINE_CSV = os.path.join(os.path.dirname(__file__), "LogErrVsMagSpline.csv")
 
 def init_spline(spline_csv, band):
     """ Initialize spline function from CSV table
@@ -97,4 +99,3 @@ def calc_uncertainties(data, indices=(None, None), extrapolate=False):
     err_data['phot_rp_mean_mag'] = np.random.normal(rp_mag_true, rp_mag_error)
 
     return err_data
-

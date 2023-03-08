@@ -1,0 +1,4 @@
+include README.rst
+include LICENSE.md
+include requirements.txt
+recursive-include *.py *.ini *.csv
