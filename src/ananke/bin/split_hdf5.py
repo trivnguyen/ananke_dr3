@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
-import os
-import sys
-import h5py
 import argparse
-import logging
+import h5py
+import os
 import time
 
-from .. import envs
+from ananke import config
+from ananke.logger import logger
 
 def parse_cmd():
     parser = argparse.ArgumentParser()
@@ -21,21 +20,19 @@ def parse_cmd():
     parser.add_argument('--Njob', type=int, default=1, help='Total number of jobs')
     return parser.parse_args()
 
-def main(FLAGS, LOGGER=None):
+def main(FLAGS):
     """ Split HDF5 file into multiple files """
     gal = FLAGS.gal
     lsr = FLAGS.lsr
     rslice = FLAGS.rslice
     ijob = FLAGS.ijob
     Njob = FLAGS.Njob
-    if LOGGER is None:
-        LOGGER = set_logger()
 
     in_path = os.path.join(
-        envs.HDF5_BASEDIR, f"{gal}/lsr-{lsr}/",
+        config.HDF5_BASEDIR, f"{gal}/lsr-{lsr}/",
         f"lsr-{lsr}-rslice-{rslice}.{gal}-res7100-md-sliced-gcat-dr3.hdf5")
     out_path = os.path.join(
-        envs.HDF5_BASEDIR, f"{gal}/lsr-{lsr}/",
+        config.HDF5_BASEDIR, f"{gal}/lsr-{lsr}/",
         f"lsr-{lsr}-rslice-{rslice}.{gal}-res7100-md-sliced-gcat-dr3.{ijob}.hdf5")
 
     f_out = h5py.File(out_path, 'w')
@@ -49,12 +46,10 @@ def main(FLAGS, LOGGER=None):
 
 if __name__ == "__main__":
     FLAGS = parse_cmd()
-    LOGGER = set_logger()
 
     # run main and keep track of time
     t0 = time.time()
-    main(FLAGS, LOGGER)
+    main(FLAGS)
     t1 = time.time()
-
-    LOGGER.info(f"Total run time: {t1 - t0}")
-    LOGGER.info("Done!")
+    logger.info(f"Total run time: {t1 - t0}")
+    logger.info("Done!")

@@ -1,4 +1,16 @@
 
+import configparser
+import os
+
+config = configparser.ConfigParser()
+config.read(os.path.join(os.path.dirname(__file__), "config.ini"))
+
+BASEDIR = config.get('ENVIRONMENT_VARIABLES', 'BASEDIR')
+EBF_BASEDIR = config.get('ENVIRONMENT_VARIABLES', 'EBF_BASEDIR')
+HDF5_BASEDIR = os.path.join(BASEDIR, "gaia_mocks_hdf5")
+DR3_PRESF_BASEDIR = os.path.join(BASEDIR, "ananke_dr3/preSF")
+DR3_BASEDIR = os.path.join(BASEDIR, "ananke_dr3")
+
 ALL_MOCK_KEYS = {
     'parentid': 'parentid',
     'partid': 'partid',
@@ -41,4 +53,3 @@ ALL_EXT_KEYS = {
     'a0': 'A0',
     'ebv': 'ebv',
 }
-

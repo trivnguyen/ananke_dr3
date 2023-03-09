@@ -14,8 +14,9 @@ import matplotlib.pyplot as plt
 
 plt.style.use('/scratch/05328/tg846280/FIRE_Public_Simulations/matplotlib_style/ananke.mplstyle')
 
-from ananke import io, envs
 import utils
+from ananke import io, envs
+from ananke.logger import logger
 
 FLAGS = None
 LOGGER = logging.getLogger(__name__)

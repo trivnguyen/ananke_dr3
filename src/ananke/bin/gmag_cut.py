@@ -7,7 +7,7 @@ import argparse
 import logging
 import time
 
-from .. import extinction, io, envs
+from ananke import extinction, io, config
 
 FLAGS = None
 
@@ -49,10 +49,10 @@ def main(FLAGS, LOGGER=None):
 
     # get file information from galaxy, lsr, and rslice
     in_path = os.path.join(
-        envs.HDF5_BASEDIR, f"{gal}/lsr-{lsr}",
+        config.HDF5_BASEDIR, f"{gal}/lsr-{lsr}",
         f"lsr-{lsr}-rslice-{rslice}.{gal}-res7100-md-sliced-gcat-dr3.{FLAGS.ijob}.hdf5")
     out_path = os.path.join(
-        envs.DR3_PRESF_BASEDIR, f"{gal}/lsr-{lsr}",
+        config.DR3_PRESF_BASEDIR, f"{gal}/lsr-{lsr}",
         f"lsr-{lsr}-rslice-{rslice}.{gal}-res7100-md-sliced-gcat-dr3.{FLAGS.ijob}.hdf5")
 
     # create output directory if not already exists
