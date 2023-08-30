@@ -42,7 +42,7 @@ def cat_to_gal(data, postfix='', indices=(None, None)):
     px = data[f'px{postfix}'][i_start: i_stop] * u.kpc
     py = data[f'py{postfix}'][i_start: i_stop] * u.kpc
     pz = data[f'pz{postfix}'][i_start: i_stop] * u.kpc
-    vx = data[f'vz{postfix}'][i_start: i_stop] * u.km / u.s
+    vx = data[f'vx{postfix}'][i_start: i_stop] * u.km / u.s
     vy = data[f'vy{postfix}'][i_start: i_stop] * u.km / u.s
     vz = data[f'vz{postfix}'][i_start: i_stop] * u.km / u.s
     gc = coord.Galactic(
